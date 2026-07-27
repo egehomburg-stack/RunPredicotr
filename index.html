@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,21 +74,50 @@
 
         function updateChart(sleep, temp, stretch) {
             const ctx = document.getElementById('myChart').getContext('2d');
+    
+            // Destroy the old chart so we can draw a new one
             if (myChart) myChart.destroy();
-            
+    
             myChart = new Chart(ctx, {
-                type: 'bar',
+                type: 'polarArea', // <--- This is the magic line
                 data: {
-                    labels: ['Sleep', 'Temp', 'Stretch'],
+                    labels: ['Sleep Factor', 'Temp Factor', 'Stretching'],
                     datasets: [{
-                        label: 'Impact',
-                        data: [sleep * 5, -Math.abs(temp-15), stretch],
-                        backgroundColor: ['#3b82f6', '#ef4444', '#10b981']
+                        data: [
+                            Math.abs(sleep * 5), 
+                            Math.abs(temp - 15), 
+                            stretch
+                        ],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.5)',  // Blue
+                            'rgba(239, 68, 68, 0.5)',   // Red
+                            'rgba(16, 185, 129, 0.5)'   // Green
+                        ],
+                        borderColor: ['#3b82f6', '#ef4444', '#10b981'],
+                        borderWidth: 2
                     }]
                 },
-                options: { plugins: { legend: { display: false } } }
+                options: {
+                    scales: {
+                        r: {
+                            grid: { color: '#334155' }, // Darker grid lines
+                            angleLines: { color: '#334155' },
+                            pointLabels: {
+                                display: true, // This shows the labels around the circle
+                                centerPointLabels: true, // This centers them
+                                font: { size: 12, family: 'sans-serif' },
+                                color: '#94a3b8'
+                            },
+                            ticks: { display: false } // Hide the background numbers
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false } // Hide the legend to keep it clean
+                    }
+                }
             });
         }
+
     </script>
 </body>
 </html>
