@@ -1,159 +1,375 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Run Predictor JS</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Run Predictor Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="icon" type="image/png" href="logo.png">
-    <link rel="apple-touch-icon" href="logo.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-</head>
-<body class="bg-slate-900 text-white font-sans p-6">
-
-    <div class="max-w-md mx-auto bg-slate-800 rounded-3xl p-8 shadow-2xl border border-slate-700">
-        <h1 class="text-3xl font-bold mb-2 flex items-center gap-2">🏃 Run Predictor</h1>
-        <p class="text-slate-400 mb-8 text-sm">JavaScript Version</p>
-
-        <!-- Inputs -->
-        <div class="space-y-6">
+    <link rel="touch-icon" href="logo.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="icon" type="image/png" href="logo.png" />
+  </head>
+  <body class="bg-[#0a253e] font-sans text-slate-200 min-h-screen">
+    <!-- Onboarding Modal -->
+    <div
+      id="onboarding"
+      class="fixed inset-0 bg-[#0a253e] z-[60] flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-slate-800 p-8 rounded-[2rem] shadow-2xl max-w-md w-full border border-slate-700"
+      >
+        <h2 class="text-2xl font-bold text-white mb-6 text-center">
+          Set Your Profile
+        </h2>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-slate-400 text-sm mb-1">Gender</label>
+            <select
+              id="gender"
+              class="w-full bg-slate-700 text-white p-3 rounded-xl border-none outline-none"
+            >
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+          <div class="grid grid-cols-3 gap-3">
             <div>
-                <label class="block text-xs uppercase tracking-wider text-slate-500 mb-2">Sleep (hours)</label>
-                <input type="number" id="sleep" value="8" step="0.1" class="w-full bg-slate-700 border-none rounded-lg p-3 focus:ring-2 focus:ring-blue-500">
+              <label class="block text-slate-400 text-sm mb-1">Age</label>
+              <input
+                type="number"
+                id="age"
+                value="22"
+                class="w-full bg-slate-700 text-white p-2 rounded-xl border-none outline-none"
+              />
             </div>
-
             <div>
-                <label class="block text-xs uppercase tracking-wider text-slate-500 mb-2">Temp (°C)</label>
-                <input type="number" id="temp" value="20" class="w-full bg-slate-700 border-none rounded-lg p-3 focus:ring-2 focus:ring-blue-500">
+              <label class="block text-slate-400 text-sm mb-1"
+                >Weight (kg)</label
+              >
+              <input
+                type="number"
+                id="weight"
+                value="73"
+                class="w-full bg-slate-700 text-white p-2 rounded-xl border-none outline-none"
+              />
             </div>
-
-            <div class="flex items-center gap-4">
-                <input type="checkbox" id="stretch" class="w-5 h-5 accent-blue-500">
-                <label class="text-sm">Did you stretch today?</label>
+            <div>
+              <label class="block text-slate-400 text-sm mb-1"
+                >Height (cm)</label
+              >
+              <input
+                type="number"
+                id="height"
+                value="183"
+                class="w-full bg-slate-700 text-white p-2 rounded-xl border-none outline-none"
+              />
             </div>
+          </div>
+          <button
+            onclick="saveProfile()"
+            class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all mt-4"
+          >
+            Save & Start
+          </button>
+        </div>
+      </div>
+    </div>
 
-            <button onclick="calculate()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-blue-900/20">
-                Predict Run Quality
-            </button>
+    <!-- Main Content -->
+    <div class="max-w-md mx-auto p-6 pt-12">
+      <div class="text-center mb-8">
+        <p class="text-slate-400 text-lg">Predicted Quality</p>
+        <h1
+          id="qualityText"
+          class="text-7xl font-black text-blue-400 mt-2 italic"
+        >
+          --%
+        </h1>
+      </div>
+
+      <!-- Chart Container -->
+      <div
+        class="relative bg-slate-800/50 p-4 rounded-[2.5rem] mb-10 border border-slate-700 aspect-square flex items-center justify-center"
+      >
+        <canvas id="myChart"></canvas>
+      </div>
+
+      <!-- Input Fields (Manually Entered Values) -->
+      <div class="space-y-5">
+        <!-- Sleep (Hours & Minutes) -->
+        <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
+          <label class="block text-slate-400 font-medium text-sm mb-2"
+            >Sleep</label
+          >
+          <div class="flex items-center gap-2">
+            <input
+              type="number"
+              id="sleepHours"
+              value="8"
+              min="0"
+              max="12"
+              class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg text-center"
+              oninput="runPredictor()"
+            />
+            <span class="text-slate-500 font-bold">h</span>
+            <input
+              type="number"
+              id="sleepMins"
+              value="0"
+              min="0"
+              max="59"
+              step="10"
+              class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg text-center"
+              oninput="runPredictor()"
+            />
+            <span class="text-slate-500 font-bold">m</span>
+          </div>
         </div>
 
-        <!-- Results -->
-        <div id="result-box" class="mt-8 hidden animate-in fade-in duration-500">
-            <div class="text-center">
-                <span class="text-slate-400 text-sm">Predicted Quality</span>
-                <div id="score" class="text-6xl font-black text-blue-400 my-2">0%</div>
-            </div>
-            <canvas id="myChart" class="mt-6"></canvas>
+        <!-- Goal Distance -->
+        <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
+          <label class="block text-slate-400 font-medium text-sm mb-2"
+            >Goal Distance (km)</label
+          >
+          <input
+            type="number"
+            id="distance"
+            value="5"
+            step="0.5"
+            class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+            oninput="runPredictor()"
+          />
         </div>
+
+        <!-- Temperature -->
+        <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
+          <label class="block text-slate-400 font-medium text-sm mb-2"
+            >Temperature (°C)</label
+          >
+          <input
+            type="number"
+            id="temperature"
+            value="20"
+            step="1"
+            class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+            oninput="runPredictor()"
+          />
+        </div>
+
+        <!-- Calories -->
+        <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
+          <label class="block text-slate-400 font-medium text-sm mb-2"
+            >Calories Eaten</label
+          >
+          <input
+            type="number"
+            id="caloriesInput"
+            value="2000"
+            step="1"
+            class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+            oninput="runPredictor()"
+          />
+        </div>
+
+        <!-- Stretching Toggle -->
+        <div
+          class="bg-slate-800 p-5 rounded-3xl border border-slate-700 flex justify-between items-center"
+        >
+          <span class="text-slate-400 font-medium text-sm"
+            >Did you stretch?</span
+          >
+          <input
+            type="checkbox"
+            id="stretching"
+            class="w-6 h-6 rounded-lg accent-blue-600"
+            onchange="runPredictor()"
+          />
+        </div>
+      </div>
+
+      <!-- Reset Button -->
+      <div class="mt-8 text-center pb-10">
+        <button
+          onclick="resetProfile()"
+          class="text-slate-500 text-xs hover:text-white underline uppercase tracking-widest"
+        >
+          Reset Profile
+        </button>
+      </div>
     </div>
 
     <script>
-        let myChart;
+      let myChart = null;
+      let profile = null;
 
-        function calculate() {
-            // Get values from screen
-            const sleep = parseFloat(document.getElementById('sleep').value);
-            const temp = parseFloat(document.getElementById('temp').value);
-            const stretch = document.getElementById('stretch').checked;
-
-            // The Math (Same as Python)
-            let score = (sleep * 5) + (stretch ? 15 : 0) - Math.abs(temp - 15);
-            let finalScore = Math.min(100, Math.max(0, Math.round(score + 40)));
-
-            // Show result
-            document.getElementById('result-box').classList.remove('hidden');
-            document.getElementById('score').innerText = finalScore + "%";
-
-            // Update Graph
-            updateChart(sleep, temp, stretch ? 15 : 0);
+      // 1. Initial Load Logic
+      window.onload = function () {
+        const saved = localStorage.getItem("runProfileData");
+        if (saved) {
+          profile = JSON.parse(saved);
+          document.getElementById("onboarding").classList.add("hidden");
+          runPredictor();
         }
+      };
 
-        function updateChart(sleep, temp, stretch) {
-    const ctx = document.getElementById('myChart').getContext('2d');
-    if (myChart) myChart.destroy();
+      // 2. Profile Management
+      function saveProfile() {
+        profile = {
+          gender: document.getElementById("gender").value,
+          age: parseFloat(document.getElementById("age").value),
+          weight: parseFloat(document.getElementById("weight").value),
+          height: parseFloat(document.getElementById("height").value),
+        };
+        localStorage.setItem("runProfileData", JSON.stringify(profile));
+        document.getElementById("onboarding").classList.add("hidden");
+        runPredictor();
+      }
 
-    // 1. Define Max Limits
-    const sleepMax = 12;
-    const tempMax = 40;
-    const stretchMax = 1;
+      function resetProfile() {
+        localStorage.removeItem("runProfileData");
+        document.getElementById("onboarding").classList.remove("hidden");
+      }
 
-    // 2. Normalize to percentages (0-100)
-    const sleepPercent = (sleep / sleepMax) * 100;
-    const tempPercent = (temp / tempMax) * 100;
-    const stretchPercent = (stretch > 0 ? 1 : 0) * 100;
+      // 3. Main Calculation Logic
+      function runPredictor() {
+        if (!profile) return;
 
-    // 3. Define Ideals as percentages
-    const idealSleep = (8 / sleepMax) * 100;
-    const idealTemp = (20 / tempMax) * 100;
-    const idealStretch = 100;
+        const h = parseFloat(document.getElementById("sleepHours").value) || 0;
+        const m = parseFloat(document.getElementById("sleepMins").value) || 0;
+        const sleep = h + m / 60;
 
-    myChart = new Chart(ctx, {
-        type: 'polarArea',
-        data: {
-            labels: ['Sleep', 'Temperature', 'Stretching'],
+        const dist = parseFloat(document.getElementById("distance").value) || 0;
+        const cal =
+          parseFloat(document.getElementById("caloriesInput").value) || 0;
+        const temp =
+          parseFloat(document.getElementById("temperature").value) || 0;
+        const stretched = document.getElementById("stretching").checked;
+
+        // Ideal Calorie Formula
+        const s = profile.gender === "male" ? 5 : -161;
+        const bmr =
+          10 * profile.weight + 6.25 * profile.height - 5 * profile.age + s;
+        const idealCal = bmr * 1.5 + profile.weight * dist;
+
+        // Scoring Logic
+        let score = 0;
+        if (sleep >= 8 && sleep <= 10) score += 40;
+        else if (sleep >= 7 || sleep === 11) score += 25;
+
+        const calDiff = Math.abs(cal - idealCal);
+        if (calDiff < 300) score += 50;
+        else if (calDiff < 700) score += 25;
+
+        if (stretched) score += 10;
+
+        document.getElementById("qualityText").innerText =
+          Math.min(score, 100) + "%";
+
+        updateChart(sleep, temp, cal, idealCal);
+      }
+
+      // 4. Visualization Logic
+      function updateChart(sleep, temp, cal, idealCal) {
+        const canvas = document.getElementById("myChart");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        if (myChart) myChart.destroy();
+
+        // Normalizing
+        const sleepP = (sleep / 12) * 100;
+        const tempP = ((temp + 10) / 55) * 100;
+        const calP = (cal / 5000) * 100;
+
+        const sleepColor =
+          sleep >= 8 && sleep <= 10
+            ? "rgba(34, 197, 94, 0.8)"
+            : "rgba(239, 68, 68, 0.8)";
+        const calColor =
+          Math.abs(cal - idealCal) < 400
+            ? "rgba(34, 197, 94, 0.8)"
+            : "rgba(239, 68, 68, 0.8)";
+        const tempColor =
+          temp >= 10 && temp <= 22
+            ? "rgba(34, 197, 94, 0.8)"
+            : "rgba(239, 68, 68, 0.8)";
+
+        myChart = new Chart(ctx, {
+          type: "polarArea",
+          data: {
+            labels: ["Sleep", "Temperature", "Calories"],
             datasets: [
-                {
-                    label: 'Actual',
-                    data: [sleepPercent, tempPercent, stretchPercent],
-                    backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(239, 68, 68, 0.8)', 'rgba(16, 185, 129, 0.8)'],
-                    borderColor: '#000000', // Black border
-                    borderWidth: 2,
-                    z: 2, // Highest layer: Covers everything
-                    realValues: [sleep + 'h / 24h', temp + '°C / 40°C', stretch > 0 ? 'Yes' : 'No']
-                },
-                {
-                    label: 'Ideal',
-                    data: [idealSleep, idealTemp, idealStretch],
-                    backgroundColor: ['rgba(147, 197, 253, 0.2)', 'rgba(252, 165, 165, 0.2)', 'rgba(110, 231, 183, 0.2)'],
-                    borderColor: '#000000', // Changed to Black border
-                    borderWidth: 1,
-                    borderDash: [5, 5],
-                    z: 1 // Middle layer: Covers grid, but sits under Actual
-                }
-            ]
-        },
-        options: {
+              {
+                data: [sleepP, tempP, calP],
+                backgroundColor: [sleepColor, tempColor, calColor],
+                borderColor: "#000000",
+                borderWidth: 2,
+                z: 2,
+                realValues: [
+                  Math.floor(sleep) + "h " + Math.round((sleep % 1) * 60) + "m",
+                  temp + "°C",
+                  Math.round(cal) + "kcal",
+                ],
+              },
+              {
+                data: [
+                  (9 / 12) * 100,
+                  ((15 + 10) / 55) * 100,
+                  (idealCal / 5000) * 100,
+                ],
+                backgroundColor: "transparent",
+                borderColor: "#000000",
+                borderWidth: 1.5,
+                borderDash: [5, 5],
+                z: 1,
+              },
+            ],
+          },
+          options: {
             scales: {
-                r: {
-                    suggestedMax: 100,
-                    ticks: { display: false },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.5)',
-                        z: 0 // Lowest layer: Behind the colored areas
-                    },
-                    angleLines: {
-                        color: 'rgba(255, 255, 255, 0.2)',
-                        z: 0
-                    },
-                    pointLabels: {
-                        display: true,
-                        centerPointLabels: true,
-                        color: '#ffffff',
-                        font: { size: 14 }
-                    }
-                }
+              r: {
+                suggestedMax: 100,
+                ticks: { display: false },
+                grid: {
+                  color: (c) =>
+                    c.index === c.scale.ticks.length - 1
+                      ? "#000000"
+                      : "rgba(255, 255, 255, 0.1)",
+                  lineWidth: (c) =>
+                    c.index === c.scale.ticks.length - 1 ? 3 : 1,
+                  z: 4,
+                },
+                angleLines: {
+                  display: true,
+                  color: "#000000",
+                  lineWidth: 3,
+                  z: 4,
+                },
+                pointLabels: {
+                  display: true,
+                  color: "#ffffff",
+                  font: { weight: "bold" },
+                  centerPointLabels: true,
+                },
+              },
             },
             plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            if (context.datasetIndex === 0) {
-                                return context.chart.data.labels[context.dataIndex] + ': ' + context.dataset.realValues[context.dataIndex];
-                            }
-                            return 'Goal Target';
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (c) =>
+                    c.datasetIndex === 0
+                      ? c.chart.data.labels[c.dataIndex] +
+                        ": " +
+                        c.dataset.realValues[c.dataIndex]
+                      : "Target",
+                },
+              },
+            },
+          },
+        });
+      }
     </script>
-</body>
+  </body>
 </html>
