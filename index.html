@@ -73,50 +73,86 @@
         }
 
         function updateChart(sleep, temp, stretch) {
-            const ctx = document.getElementById('myChart').getContext('2d');
-    
-            // Destroy the old chart so we can draw a new one
-            if (myChart) myChart.destroy();
-    
-            myChart = new Chart(ctx, {
-                type: 'polarArea', // <--- This is the magic line
-                data: {
-                    labels: ['Sleep Factor', 'Temp Factor', 'Stretching'],
-                    datasets: [{
-                        data: [
-                            Math.abs(sleep * 5), 
-                            Math.abs(temp - 15), 
-                            stretch
-                        ],
-                        backgroundColor: [
-                            'rgba(59, 130, 246, 0.5)',  // Blue
-                            'rgba(239, 68, 68, 0.5)',   // Red
-                            'rgba(16, 185, 129, 0.5)'   // Green
-                        ],
-                        borderColor: ['#3b82f6', '#ef4444', '#10b981'],
-                        borderWidth: 2
-                    }]
+    const ctx = document.getElementById('myChart').getContext('2d');
+    if (myChart) myChart.destroy();
+
+    // 1. Define Max Limits
+    const sleepMax = 12;
+    const tempMax = 40;
+    const stretchMax = 1;
+
+    // 2. Normalize to percentages (0-100)
+    const sleepPercent = (sleep / sleepMax) * 100;
+    const tempPercent = (temp / tempMax) * 100;
+    const stretchPercent = (stretch > 0 ? 1 : 0) * 100;
+
+    // 3. Define Ideals as percentages
+    const idealSleep = (8 / sleepMax) * 100;
+    const idealTemp = (20 / tempMax) * 100;
+    const idealStretch = 100;
+
+    myChart = new Chart(ctx, {
+        type: 'polarArea',
+        data: {
+            labels: ['Sleep', 'Temperature', 'Stretching'],
+            datasets: [
+                {
+                    label: 'Actual',
+                    data: [sleepPercent, tempPercent, stretchPercent],
+                    backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(239, 68, 68, 0.8)', 'rgba(16, 185, 129, 0.8)'],
+                    borderColor: '#000000', // Black border
+                    borderWidth: 2,
+                    z: 2, // Highest layer: Covers everything
+                    realValues: [sleep + 'h / 24h', temp + '°C / 40°C', stretch > 0 ? 'Yes' : 'No']
                 },
-                options: {
-                    scales: {
-                        r: {
-                            grid: { color: '#334155' }, // Darker grid lines
-                            angleLines: { color: '#334155' },
-                            pointLabels: {
-                                display: true, // This shows the labels around the circle
-                                centerPointLabels: true, // This centers them
-                                font: { size: 12, family: 'sans-serif' },
-                                color: '#94a3b8'
-                            },
-                            ticks: { display: false } // Hide the background numbers
-                        }
+                {
+                    label: 'Ideal',
+                    data: [idealSleep, idealTemp, idealStretch],
+                    backgroundColor: ['rgba(147, 197, 253, 0.2)', 'rgba(252, 165, 165, 0.2)', 'rgba(110, 231, 183, 0.2)'],
+                    borderColor: '#000000', // Changed to Black border
+                    borderWidth: 1,
+                    borderDash: [5, 5],
+                    z: 1 // Middle layer: Covers grid, but sits under Actual
+                }
+            ]
+        },
+        options: {
+            scales: {
+                r: {
+                    suggestedMax: 100,
+                    ticks: { display: false },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        z: 0 // Lowest layer: Behind the colored areas
                     },
-                    plugins: {
-                        legend: { display: false } // Hide the legend to keep it clean
+                    angleLines: {
+                        color: 'rgba(255, 255, 255, 0.2)',
+                        z: 0
+                    },
+                    pointLabels: {
+                        display: true,
+                        centerPointLabels: true,
+                        color: '#ffffff',
+                        font: { size: 14 }
                     }
                 }
-            });
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            if (context.datasetIndex === 0) {
+                                return context.chart.data.labels[context.dataIndex] + ': ' + context.dataset.realValues[context.dataIndex];
+                            }
+                            return 'Goal Target';
+                        }
+                    }
+                }
+            }
         }
+    });
+}
 
     </script>
 </body>
