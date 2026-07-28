@@ -34,6 +34,18 @@
               <option value="female">Female</option>
             </select>
           </div>
+          <div>
+            <label class="block text-slate-400 text-sm mb-1">Sweat Rate</label>
+            <select
+              id="sweatRate"
+              class="w-full bg-slate-700 text-white p-3 rounded-xl border-none outline-none"
+            >
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+
           <div class="grid grid-cols-3 gap-3">
             <div>
               <label class="block text-slate-400 text-sm mb-1">Age</label>
@@ -77,26 +89,8 @@
       </div>
     </div>
 
-    <!-- Main Content -->
+    <!-- Input Fields (Manually Entered Values) -->
     <div class="max-w-md mx-auto p-6 pt-12">
-      <div class="text-center mb-8">
-        <p class="text-slate-400 text-lg">Predicted Quality</p>
-        <h1
-          id="qualityText"
-          class="text-7xl font-black text-blue-400 mt-2 italic"
-        >
-          --%
-        </h1>
-      </div>
-
-      <!-- Chart Container -->
-      <div
-        class="relative bg-slate-800/50 p-4 rounded-[2.5rem] mb-10 border border-slate-700 aspect-square flex items-center justify-center"
-      >
-        <canvas id="myChart"></canvas>
-      </div>
-
-      <!-- Input Fields (Manually Entered Values) -->
       <div class="space-y-5">
         <!-- Sleep (Hours & Minutes) -->
         <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
@@ -173,6 +167,35 @@
           />
         </div>
 
+        <!-- Hydration Input -->
+        <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
+          <label class="block text-slate-400 font-medium text-sm mb-2"
+            >Hydration (L)</label
+          >
+          <input
+            type="number"
+            id="hydrationInput"
+            step="0.1"
+            value="2.5"
+            class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+            oninput="runPredictor()"
+          />
+        </div>
+
+        <!-- Altitude Input -->
+        <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
+          <label class="block text-slate-400 font-medium text-sm mb-2"
+            >Altitude (m)</label
+          >
+          <input
+            type="number"
+            id="altitudeInput"
+            value="500"
+            class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+            oninput="runPredictor()"
+          />
+        </div>
+
         <!-- Stretching Toggle -->
         <div
           class="bg-slate-800 p-5 rounded-3xl border border-slate-700 flex justify-between items-center"
@@ -187,6 +210,25 @@
             onchange="runPredictor()"
           />
         </div>
+      </div>
+
+      <!-- Main Content -->
+
+      <div class="text-center mb-8">
+        <p class="text-slate-400 text-lg">Predicted Quality</p>
+        <h1
+          id="qualityText"
+          class="text-7xl font-black text-blue-400 mt-2 italic"
+        >
+          --%
+        </h1>
+      </div>
+
+      <!-- Chart Container -->
+      <div
+        class="relative bg-slate-800/50 p-4 rounded-[2.5rem] mb-10 border border-slate-700 aspect-square flex items-center justify-center"
+      >
+        <canvas id="myChart"></canvas>
       </div>
 
       <!-- Reset Button -->
@@ -218,6 +260,7 @@
       function saveProfile() {
         profile = {
           gender: document.getElementById("gender").value,
+          sweatRate: document.getElementById("sweatRate").value,
           age: parseFloat(document.getElementById("age").value),
           weight: parseFloat(document.getElementById("weight").value),
           height: parseFloat(document.getElementById("height").value),
@@ -246,6 +289,10 @@
         const temp =
           parseFloat(document.getElementById("temperature").value) || 0;
         const stretched = document.getElementById("stretching").checked;
+        const water =
+          parseFloat(document.getElementById("hydrationInput").value) || 0;
+        const alt =
+          parseFloat(document.getElementById("altitudeInput").value) || 0;
 
         // Ideal Calorie Formula
         const s = profile.gender === "male" ? 5 : -161;
@@ -253,56 +300,226 @@
           10 * profile.weight + 6.25 * profile.height - 5 * profile.age + s;
         const idealCal = bmr * 1.5 + profile.weight * dist;
 
+        // Ideal Hydration Formula
+        const sweatMap = { low: 0.7, medium: 1.0, high: 1.4 };
+        const sMult = sweatMap[profile.sweatRate] || 1.0;
+
+        let baselineWater = profile.weight * 0.035;
+        if (profile.gender.toLowerCase() === "male") baselineWater *= 1.1;
+
+        let runLoss = dist * 0.1 * sMult;
+        if (temp > 20) {
+          runLoss *= 1 + (temp - 20) * 0.05;
+        }
+
+        const idealWater = baselineWater + runLoss;
+
         // Scoring Logic
-        let score = 0;
-        if (sleep >= 8 && sleep <= 10) score += 40;
-        else if (sleep >= 7 || sleep === 11) score += 25;
+        // Baseline Performance starts at 1.0 (100%)
+        let multiplier = 1.0;
 
-        const calDiff = Math.abs(cal - idealCal);
-        if (calDiff < 300) score += 50;
-        else if (calDiff < 700) score += 25;
+        // Sleep Multiplier (Ideal 8.5h - 9.5h)
+        let sleepFactor = 1.0;
+        if (sleep < 8.5) {
+          // Lose roughly 5% for every hour of sleep missing
+          sleepFactor = 1.0 - (8.5 - sleep) * 0.05;
+        } else if (sleep > 9.5) {
+          // Too much sleep also makes you groggy
+          sleepFactor = 1.0 - (sleep - 9.5) * 0.02;
+        }
+        multiplier *= Math.max(0.6, sleepFactor); // Can't lose more than 40% from sleep
 
-        if (stretched) score += 10;
+        // Temperature Multiplier (Ideal 12°C - 20°C)
+        let tempFactor = 1.0;
+        if (temp > 9.9) {
+          // Heat is dangerous! Lose 2% for every degree over 20
+          tempFactor = 1.0 - (temp - 9.9) * 0.025;
+        } else if (temp < 3.8) {
+          // Cold is easier, lose 1% for every degree under 12
+          tempFactor = 1.0 - (3.8 - temp) * 0.015;
+        }
+        multiplier *= Math.max(0.4, tempFactor);
 
-        document.getElementById("qualityText").innerText =
-          Math.min(score, 100) + "%";
+        // Calories Multiplier (Fuel Factor)
+        // We compare what you ate to your ideal BMR
+        let calRatio = cal / idealCal;
+        let calFactor = 1.0;
 
-        updateChart(sleep, temp, cal, idealCal);
+        if (calRatio < 0.8) {
+          // Under-fueled: Lose 5% for every 10% you are under the 80% mark
+          calFactor = 1.0 - (0.8 - calRatio) * 0.5;
+        } else if (calRatio > 1.2) {
+          // Over-fueled: Too full! Lose 2% for every 10% you are over the 120% mark
+          calFactor = 1.0 - (calRatio - 1.2) * 0.2;
+        }
+
+        // Floor it at 0.6 (Even hungry, you can run, but it'll be slow)
+        multiplier *= Math.max(0.6, calFactor);
+
+        // Hydration Multiplier (Penalty if under-hydrated)
+        let hydrationFactor = 1.0;
+        const hydrationDeficit = idealWater - water;
+
+        if (hydrationDeficit > 0) {
+          // Lose 10% performance for every Liter missing
+          hydrationFactor = 1.0 - hydrationDeficit * 0.1;
+        }
+
+        // Don't let the factor go below 0.5 (50% performance)
+        hydrationFactor = Math.max(0.5, hydrationFactor);
+        multiplier *= hydrationFactor;
+
+        // Altitude Multiplier (Penalty kicks in above 1500m)
+        let altFactor = 1.0;
+        if (alt > 1500) {
+          altFactor = 1.0 - ((alt - 1500) / 100) * 0.015; // 1.5% drop per 100m
+        }
+        multiplier *= Math.max(0.6, altFactor);
+
+        let stretchMultiplier = stretched ? 1.05 : 1.0;
+        multiplier *= stretchMultiplier;
+
+        let finalScore = Math.round(multiplier * 100);
+        document.getElementById("qualityText").innerText = finalScore + "%";
+
+        updateChart(sleep, temp, cal, idealCal, water, idealWater, alt);
       }
 
       // 4. Visualization Logic
-      function updateChart(sleep, temp, cal, idealCal) {
+      function updateChart(sleep, temp, cal, idealCal, water, idealWater, alt) {
         const canvas = document.getElementById("myChart");
         if (!canvas) return;
         const ctx = canvas.getContext("2d");
         if (myChart) myChart.destroy();
 
         // Normalizing
-        const sleepP = (sleep / 12) * 100;
-        const tempP = ((temp + 10) / 55) * 100;
-        const calP = (cal / 5000) * 100;
+        const sleepP = Math.min(100, (sleep / 12) * 100);
+        const tempP = Math.min(100, ((temp + 10) / 55) * 100);
+        const calP = Math.min(100, (cal / idealCal) * 100);
+        const waterP = Math.min(100, (water / idealWater) * 100);
+        const altP = Math.min(100, (alt / 3000) * 100);
 
-        const sleepColor =
-          sleep >= 8 && sleep <= 10
-            ? "rgba(34, 197, 94, 0.8)"
-            : "rgba(239, 68, 68, 0.8)";
-        const calColor =
-          Math.abs(cal - idealCal) < 400
-            ? "rgba(34, 197, 94, 0.8)"
-            : "rgba(239, 68, 68, 0.8)";
-        const tempColor =
-          temp >= 10 && temp <= 22
-            ? "rgba(34, 197, 94, 0.8)"
-            : "rgba(239, 68, 68, 0.8)";
+        let sleepColor;
+        if (sleep >= 8.5 && sleep <= 9.5)
+          sleepColor = "rgba(13, 179, 158, 0.8)"; // Perfect
+        else if (sleep > 8 && sleep <= 10)
+          sleepColor = "rgba(22, 219, 147, 0.8)"; // Fantastic
+        else if (sleep > 7.5 && sleep <= 10.3)
+          sleepColor = "rgba(131, 227, 119, 0.8)"; // Great
+        else if (sleep > 7 && sleep <= 10.5)
+          sleepColor = "rgba(185, 231, 105, 0.8)"; // Good
+        else if (sleep > 6.5 && sleep <= 11)
+          sleepColor = "rgba(234, 179, 8, 0.8)"; // Decent
+        else if (sleep > 6 && sleep <= 11.3)
+          sleepColor = "rgba(245, 158, 11, 0.8)"; // Poor
+        else if (sleep > 5.5 && sleep <= 11.5)
+          sleepColor = "rgba(250, 121, 33, 0.8)"; // Bad
+        else if (sleep > 5 && sleep <= 11.7)
+          sleepColor = "rgba(229, 89, 52, 0.8)"; // Miserable
+        else sleepColor = "rgba(220, 38, 38, 0.8)"; // Catastrophic
+
+        // Calories Color
+        let calColor;
+        const calDiff = Math.abs(cal - idealCal);
+
+        if (calDiff < 100)
+          calColor = "rgba(13, 179, 158, 0.8)"; // Perfect
+        else if (calDiff < 300)
+          calColor = "rgba(22, 219, 147, 0.8)"; // Fantastic
+        else if (calDiff < 500)
+          calColor = "rgba(131, 227, 119, 0.8)"; // Great
+        else if (calDiff < 700)
+          calColor = "rgba(185, 231, 105, 0.8)"; // Good
+        else if (calDiff < 900)
+          calColor = "rgba(234, 179, 8, 0.8)"; // Decent
+        else if (calDiff < 1100)
+          calColor = "rgba(245, 158, 11, 0.8)"; // Poor
+        else if (calDiff < 1300)
+          calColor = "rgba(250, 121, 33, 0.8)"; // Bad
+        else if (calDiff < 1500)
+          calColor = "rgba(229, 89, 52, 0.8)"; // Miserable
+        else calColor = "rgba(220, 38, 38, 0.8)"; // Catastrophic
+
+        // Temperature Color
+        let tempColor;
+
+        if (temp >= 3.8 && temp <= 9.9)
+          tempColor = "rgba(13, 179, 158, 0.8)"; // Perfect
+        else if (temp >= 1.0 && temp <= 14)
+          tempColor = "rgba(22, 219, 147, 0.8)"; // Fantastic
+        else if (temp >= -1.5 && temp <= 18)
+          tempColor = "rgba(131, 227, 119, 0.8)"; // Great
+        else if (temp >= -4.0 && temp <= 22)
+          tempColor = "rgba(185, 231, 105, 0.8)"; // Good
+        else if (temp >= -6.5 && temp <= 26)
+          tempColor = "rgba(234, 179, 8, 0.8)"; // Decent
+        else if (temp >= -9.0 && temp <= 30)
+          tempColor = "rgba(245, 158, 11, 0.8)"; // Poor
+        else if (temp >= -11.5 && temp <= 34)
+          tempColor = "rgba(250, 121, 33, 0.8)"; // Bad
+        else if (temp >= -14.0 && temp <= 38)
+          tempColor = "rgba(229, 89, 52, 0.8)"; // Miserable
+        else tempColor = "rgba(220, 38, 38, 0.8)"; // Catastrophic
+
+        // Water Color
+        let waterColor;
+        const waterDiff = Math.abs(water - idealWater);
+
+        if (waterDiff < 0.2) {
+          waterColor = "rgba(13, 179, 158, 0.8)"; // Perfect (within 200ml)
+        } else if (waterDiff < 0.5) {
+          waterColor = "rgba(22, 219, 147, 0.8)"; // Fantastic
+        } else if (waterDiff < 0.8) {
+          waterColor = "rgba(131, 227, 119, 0.8)"; // Great
+        } else if (waterDiff < 1.0) {
+          waterColor = "rgba(185, 231, 105, 0.8)"; // Good
+        } else if (waterDiff < 1.3) {
+          waterColor = "rgba(234, 179, 8, 0.8)"; // Decent
+        } else if (waterDiff < 1.6) {
+          waterColor = "rgba(245, 158, 11, 0.8)"; // Poor
+        } else if (waterDiff < 2.0) {
+          waterColor = "rgba(250, 121, 33, 0.8)"; // Bad
+        } else if (waterDiff < 2.5) {
+          waterColor = "rgba(229, 89, 52, 0.8)"; // Miserable
+        } else {
+          waterColor = "rgba(220, 38, 38, 0.8)"; // Catastrophic
+        }
+
+        // Altitude Color
+        let altColor;
+
+        if (alt >= 0.0 && alt <= 900)
+          altColor = "rgba(13, 179, 158, 0.8)"; // Perfect
+        else if (alt >= 901 && alt <= 1200)
+          altColor = "rgba(131, 227, 119, 0.8)"; // Great
+        else if (alt >= 1201 && alt <= 1800)
+          altColor = "rgba(185, 231, 105, 0.8)"; // Good
+        else if (alt >= 1801 && alt <= 2000)
+          altColor = "rgba(234, 179, 8, 0.8)"; // Decent
+        else if (alt >= 2001 && alt <= 2500)
+          altColor = "rgba(250, 121, 33, 0.8)"; // Bad
+        else altColor = "rgba(220, 38, 38, 0.8)"; // Catastrophic
 
         myChart = new Chart(ctx, {
           type: "polarArea",
           data: {
-            labels: ["Sleep", "Temperature", "Calories"],
+            labels: [
+              "Sleep",
+              "Temperature",
+              "Calories",
+              "Hydration",
+              "Altitude",
+            ],
             datasets: [
               {
-                data: [sleepP, tempP, calP],
-                backgroundColor: [sleepColor, tempColor, calColor],
+                data: [sleepP, tempP, calP, waterP, altP],
+                backgroundColor: [
+                  sleepColor,
+                  tempColor,
+                  calColor,
+                  waterColor,
+                  altColor,
+                ],
                 borderColor: "#000000",
                 borderWidth: 2,
                 z: 2,
@@ -310,13 +527,17 @@
                   Math.floor(sleep) + "h " + Math.round((sleep % 1) * 60) + "m",
                   temp + "°C",
                   Math.round(cal) + "kcal",
+                  water.toFixed(1) + " L",
+                  Math.round(alt) + " m",
                 ],
               },
               {
                 data: [
                   (9 / 12) * 100,
-                  ((15 + 10) / 55) * 100,
-                  (idealCal / 5000) * 100,
+                  (6 / 50) * 100,
+                  100,
+                  100,
+                  (1000 / 3000) * 100,
                 ],
                 backgroundColor: "transparent",
                 borderColor: "#000000",
@@ -329,7 +550,7 @@
           options: {
             scales: {
               r: {
-                suggestedMax: 100,
+                max: 100,
                 ticks: { display: false },
                 grid: {
                   color: (c) =>
@@ -370,6 +591,93 @@
           },
         });
       }
+      function toggleModal() {
+        const modal = document.getElementById("runModal");
+        modal.classList.toggle("hidden");
+      }
+
+      function saveRun() {
+        const dist = document.getElementById("logDist").value;
+        const time = document.getElementById("logTime").value;
+        const burn = document.getElementById("logBurn").value;
+
+        if (!dist || !time) {
+          alert("Please fill in the distance and time! 🏃‍♂️");
+          return;
+        }
+
+        console.log(`Saved: ${dist}km in ${time}min.`);
+        toggleModal();
+        alert("Run saved successfully!");
+      }
     </script>
+    <!-- 1. Floating Action Button -->
+
+    <button
+      onclick="toggleModal()"
+      class="fixed top-6 right-6 w-14 h-14 rounded-full bg-slate-900/40 backdrop-blur-md border border-blue-500/50 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.5)] flex items-center justify-center text-3xl font-light transition-all hover:scale-110 hover:shadow-[0_0_30px_rgba(59,130,246,0.8)] z-50 ring-4 ring-blue-500/10"
+    >
+      <span class="-mt-1">+</span>
+    </button>
+
+    <!-- 2. Modal Overlay -->
+    <div
+      id="runModal"
+      class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-[#1e293b] w-full max-w-sm rounded-3xl p-6 border border-slate-700 shadow-2xl"
+      >
+        <h2 class="text-xl font-bold mb-4 text-white">Log New Run</h2>
+
+        <div class="space-y-4 text-left">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1"
+              >Distance (km)</label
+            >
+            <input
+              type="number"
+              id="logDist"
+              class="w-full bg-slate-900 rounded-xl p-3 text-white border border-slate-700 outline-none"
+            />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1"
+              >Duration (min)</label
+            >
+            <input
+              type="number"
+              id="logTime"
+              class="w-full bg-slate-900 rounded-xl p-3 text-white border border-slate-700 outline-none"
+            />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1"
+              >Calories Burnt</label
+            >
+            <input
+              type="number"
+              id="logBurn"
+              class="w-full bg-slate-900 rounded-xl p-3 text-white border border-slate-700 outline-none"
+            />
+          </div>
+        </div>
+
+        <div class="flex gap-3 mt-6">
+          <button
+            onclick="toggleModal()"
+            class="flex-1 py-3 text-slate-400 font-semibold"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="saveRun()"
+            class="flex-1 bg-blue-500 py-3 rounded-xl text-white font-bold"
+          >
+            Save Run
+          </button>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
