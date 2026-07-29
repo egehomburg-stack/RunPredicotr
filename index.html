@@ -47,8 +47,8 @@
               class="w-full bg-slate-700 text-white p-3 rounded-xl border-none outline-none"
             >
               <option value="low">Low</option>
-              <option value="medium" selected>Medium</option>
-              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="high" selected>High</option>
             </select>
           </div>
 
@@ -100,9 +100,16 @@
       <div class="space-y-5">
         <!-- Sleep (Hours & Minutes) -->
         <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
-          <label class="block text-slate-400 font-medium text-sm mb-2"
-            >Sleep</label
-          >
+          <label class="block text-slate-400 font-medium text-sm mb-2">
+            Sleep
+            <span
+              onclick="showInfo('sleep')"
+              class="text-[11px] text-slate-500 font-normal ml-2 italic cursor-pointer hover:underline hover:text-blue-400 transition-colors"
+            >
+              (Ideal: 8h30m-9h30m)
+            </span>
+          </label>
+
           <div class="flex items-center gap-2">
             <input
               type="number"
@@ -128,25 +135,14 @@
           </div>
         </div>
 
-        <!-- Goal Distance -->
-        <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
-          <label class="block text-slate-400 font-medium text-sm mb-2"
-            >Goal Distance (km)</label
-          >
-          <input
-            type="number"
-            id="distance"
-            value="5"
-            step="0.5"
-            class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
-            oninput="runPredictor()"
-          />
-        </div>
-
         <!-- Temperature -->
         <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
           <label class="block text-slate-400 font-medium text-sm mb-2"
-            >Temperature (°C)</label
+            >Temperature (°C)<span
+              onclick="showInfo('temp')"
+              class="text-[11px] text-slate-500 font-normal ml-2 italic cursor-pointer hover:underline hover:text-blue-400 transition-colors"
+              >(Ideal: 3.8-9.9 °C)</span
+            ></label
           >
           <input
             type="number"
@@ -161,8 +157,13 @@
         <!-- Calories -->
         <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
           <label class="block text-slate-400 font-medium text-sm mb-2"
-            >Calories Eaten</label
-          >
+            >Calories Eaten<span
+              id="idealCalHint"
+              onclick="showInfo('cal')"
+              class="text-[11px] text-slate-500 font-normal ml-2 italic cursor-pointer hover:underline hover:text-blue-400 transition-colors"
+              >(Ideal: -- kcal)</span
+            >
+          </label>
           <input
             type="number"
             id="caloriesInput"
@@ -176,7 +177,12 @@
         <!-- Hydration Input -->
         <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
           <label class="block text-slate-400 font-medium text-sm mb-2"
-            >Hydration (L)</label
+            >Hydration (L)<span
+              id="idealWaterHint"
+              onclick="showInfo('water')"
+              class="text-[11px] text-slate-500 font-normal ml-2 italic cursor-pointer hover:underline hover:text-blue-400 transition-colors"
+              >(Ideal: -- L)</span
+            ></label
           >
           <input
             type="number"
@@ -191,12 +197,32 @@
         <!-- Altitude Input -->
         <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
           <label class="block text-slate-400 font-medium text-sm mb-2"
-            >Altitude (m)</label
-          >
+            >Altitude (m)<span
+              id="idealAltHint"
+              onclick="showInfo('alt')"
+              class="text-[11px] text-slate-500 font-normal ml-2 italic cursor-pointer hover:underline hover:text-blue-400 transition-colors"
+              >(Ideal: 0-900m)</span
+            >
+          </label>
           <input
             type="number"
             id="altitudeInput"
             value="500"
+            class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+            oninput="runPredictor()"
+          />
+        </div>
+
+        <!-- Goal Distance -->
+        <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
+          <label class="block text-slate-400 font-medium text-sm mb-2"
+            >Goal Distance (km)</label
+          >
+          <input
+            type="number"
+            id="distance"
+            value="5"
+            step="0.5"
             class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
             oninput="runPredictor()"
           />
@@ -305,6 +331,8 @@
         const bmr =
           10 * profile.weight + 6.25 * profile.height - 5 * profile.age + s;
         const idealCal = bmr * 1.5 + profile.weight * dist;
+        document.getElementById("idealCalHint").innerText =
+          `(Ideal: ${Math.round(idealCal)} kcal)`;
 
         // Ideal Hydration Formula
         const sweatMap = { low: 0.7, medium: 1.0, high: 1.4 };
@@ -314,11 +342,13 @@
         if (profile.gender.toLowerCase() === "male") baselineWater *= 1.1;
 
         let runLoss = dist * 0.1 * sMult;
-        if (temp > 20) {
+        {
           runLoss *= 1 + (temp - 20) * 0.05;
         }
 
         const idealWater = baselineWater + runLoss;
+        document.getElementById("idealWaterHint").innerText =
+          `(Ideal: ${idealWater.toFixed(1)} L)`;
 
         // Scoring Logic
         // Baseline Performance starts at 1.0 (100%)
@@ -631,20 +661,6 @@
                   Math.round(alt) + " m",
                 ],
               },
-              {
-                data: [
-                  (9 / 12) * 100,
-                  (6 / 50) * 100,
-                  100,
-                  100,
-                  (1000 / 3000) * 100,
-                ],
-                backgroundColor: "transparent",
-                borderColor: "#000000",
-                borderWidth: 1.5,
-                borderDash: [5, 5],
-                z: 1,
-              },
             ],
           },
           options: {
@@ -691,6 +707,7 @@
           },
         });
       }
+      // +
       function toggleModal() {
         const modal = document.getElementById("runModal");
         modal.classList.toggle("hidden");
@@ -710,6 +727,41 @@
         toggleModal();
         alert("Run saved successfully!");
       }
+      // Explanations
+      const explanations = {
+        sleep:
+          "8h30m-9h30m hours of sleep is the 'Goldilocks' zone for athletes. It's when your body repairs muscle tissue and releases growth hormones.",
+        temp: "5-10°C is scientifically the best temp for running. Your body doesn't waste energy cooling itself down, letting you pump more blood to your legs!",
+        cal: "Your ideal calories are calculated based on your BMR (Age/Weight/Gender) plus the extra energy burned for your specific goal distance.",
+        water:
+          "Hydration is adjusted for your weight and the heat. Above 20°C, you lose significantly more fluid through sweat, requiring a higher intake.",
+        alt: "Oxygen is densest at sea level. As you go higher, your heart has to beat faster to get the same amount of oxygen, which slows your pace.",
+      };
+
+      function showInfo(category) {
+        const modal = document.getElementById("infoModal");
+        const title = document.getElementById("modalTitle");
+        const body = document.getElementById("modalBody");
+
+        // Capitalize the first letter for the title
+        title.innerText =
+          category.charAt(0).toUpperCase() + category.slice(1) + " Science";
+        body.innerText = explanations[category];
+
+        modal.classList.remove("hidden");
+      }
+
+      function closeModal() {
+        document.getElementById("infoModal").classList.add("hidden");
+      }
+
+      // Close modal if user clicks outside the box
+      window.onclick = function (event) {
+        const modal = document.getElementById("infoModal");
+        if (event.target == modal) {
+          closeModal();
+        }
+      };
     </script>
     <!-- 1. Floating Action Button -->
 
@@ -777,6 +829,28 @@
             Save Run
           </button>
         </div>
+      </div>
+    </div>
+    <!-- Explanation Modal -->
+    <div
+      id="infoModal"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-[100] p-4"
+    >
+      <div
+        class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl"
+      >
+        <h3 id="modalTitle" class="text-xl font-bold text-white mb-2">
+          Ideal Explanation
+        </h3>
+        <p id="modalBody" class="text-slate-300 text-sm leading-relaxed mb-6">
+          Explanation text goes here...
+        </p>
+        <button
+          onclick="closeModal()"
+          class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all"
+        >
+          Got it!
+        </button>
       </div>
     </div>
   </body>
