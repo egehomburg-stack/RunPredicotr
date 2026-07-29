@@ -399,34 +399,129 @@
         if (myChart) myChart.destroy();
 
         // Normalizing
-        const sleepP = Math.min(100, (sleep / 12) * 100);
-        const tempP = Math.min(100, ((temp + 10) / 55) * 100);
-        const calP = Math.min(100, (cal / idealCal) * 100);
-        const waterP = Math.min(100, (water / idealWater) * 100);
-        const altP = Math.min(100, (alt / 3000) * 100);
+        let sleepP;
+        if (sleep >= 8.5 && sleep <= 9.5) {
+          sleepP = 100; // Perfect
+        } else if (sleep >= 8 && sleep <= 10) {
+          sleepP = 90; // Fantastic
+        } else if (sleep >= 7.5 && sleep <= 10.3) {
+          sleepP = 80; // Great
+        } else if (sleep >= 7 && sleep <= 10.5) {
+          sleepP = 70; // Good
+        } else if (sleep >= 6.5 && sleep <= 11) {
+          sleepP = 60; // Decent
+        } else if (sleep >= 6 && sleep <= 11.3) {
+          sleepP = 50; // Poor
+        } else if (sleep >= 5.5 && sleep <= 11.5) {
+          sleepP = 40; // Bad
+        } else if (sleep >= 5 && sleep <= 11.7) {
+          sleepP = 30; // Miserable
+        } else {
+          sleepP = 20; // Catastrophic
+        }
 
+        let tempP;
+        if (temp >= 3.8 && temp <= 9.9) {
+          tempP = 100; // Perfect
+        } else if (temp >= 1.0 && temp <= 14) {
+          tempP = 90; // Fantastic
+        } else if (temp >= -1.5 && temp <= 18) {
+          tempP = 80; // Great
+        } else if (temp >= -4.0 && temp <= 22) {
+          tempP = 70; // Good
+        } else if (temp >= -6.5 && temp <= 26) {
+          tempP = 60; // Decent
+        } else if (temp >= -9.0 && temp <= 30) {
+          tempP = 50; // Poor
+        } else if (temp >= -11.5 && temp <= 34) {
+          tempP = 40; // Bad
+        } else if (temp >= -14.0 && temp <= 38) {
+          tempP = 30; // Miserable
+        } else {
+          tempP = 20; // Catastrophic
+        }
+
+        let calP;
+        const calDiff = Math.abs(cal - idealCal);
+        if (calDiff < 100) {
+          calP = 100;
+        } else if (calDiff < 300) {
+          calP = 90;
+        } else if (calDiff < 500) {
+          calP = 80;
+        } else if (calDiff < 700) {
+          calP = 70;
+        } else if (calDiff < 900) {
+          calP = 60;
+        } else if (calDiff < 1100) {
+          calP = 50;
+        } else if (calDiff < 1300) {
+          calP = 40;
+        } else if (calDiff < 1500) {
+          calP = 30;
+        } else {
+          calP = 20;
+        }
+
+        let waterP;
+        const waterDiff = Math.abs(water - idealWater);
+        if (waterDiff < 0.2) {
+          waterP = 100;
+        } else if (waterDiff < 0.5) {
+          waterP = 90;
+        } else if (waterDiff < 0.8) {
+          waterP = 80;
+        } else if (waterDiff < 1.0) {
+          waterP = 70;
+        } else if (waterDiff < 1.3) {
+          waterP = 60;
+        } else if (waterDiff < 1.6) {
+          waterP = 50;
+        } else if (waterDiff < 2.0) {
+          waterP = 40;
+        } else if (waterDiff < 2.5) {
+          waterP = 30;
+        } else {
+          waterP = 20;
+        }
+
+        let altP;
+        if (alt <= 900) {
+          altP = 100;
+        } else if (alt <= 1200) {
+          altP = 85;
+        } else if (alt <= 1800) {
+          altP = 70;
+        } else if (alt <= 2000) {
+          altP = 55;
+        } else if (alt <= 2500) {
+          altP = 40;
+        } else {
+          altP = 20;
+        }
+
+        // Colors
         let sleepColor;
         if (sleep >= 8.5 && sleep <= 9.5)
           sleepColor = "rgba(13, 179, 158, 0.8)"; // Perfect
-        else if (sleep > 8 && sleep <= 10)
+        else if (sleep >= 8 && sleep <= 10)
           sleepColor = "rgba(22, 219, 147, 0.8)"; // Fantastic
-        else if (sleep > 7.5 && sleep <= 10.3)
+        else if (sleep >= 7.5 && sleep <= 10.3)
           sleepColor = "rgba(131, 227, 119, 0.8)"; // Great
-        else if (sleep > 7 && sleep <= 10.5)
+        else if (sleep >= 7 && sleep <= 10.5)
           sleepColor = "rgba(185, 231, 105, 0.8)"; // Good
-        else if (sleep > 6.5 && sleep <= 11)
+        else if (sleep >= 6.5 && sleep <= 11)
           sleepColor = "rgba(234, 179, 8, 0.8)"; // Decent
-        else if (sleep > 6 && sleep <= 11.3)
+        else if (sleep >= 6 && sleep <= 11.3)
           sleepColor = "rgba(245, 158, 11, 0.8)"; // Poor
-        else if (sleep > 5.5 && sleep <= 11.5)
+        else if (sleep >= 5.5 && sleep <= 11.5)
           sleepColor = "rgba(250, 121, 33, 0.8)"; // Bad
-        else if (sleep > 5 && sleep <= 11.7)
+        else if (sleep >= 5 && sleep <= 11.7)
           sleepColor = "rgba(229, 89, 52, 0.8)"; // Miserable
         else sleepColor = "rgba(220, 38, 38, 0.8)"; // Catastrophic
 
         // Calories Color
         let calColor;
-        const calDiff = Math.abs(cal - idealCal);
 
         if (calDiff < 100)
           calColor = "rgba(13, 179, 158, 0.8)"; // Perfect
@@ -469,7 +564,6 @@
 
         // Water Color
         let waterColor;
-        const waterDiff = Math.abs(water - idealWater);
 
         if (waterDiff < 0.2) {
           waterColor = "rgba(13, 179, 158, 0.8)"; // Perfect (within 200ml)
