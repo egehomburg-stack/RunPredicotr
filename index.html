@@ -346,9 +346,32 @@
           runLoss *= 1 + (temp - 20) * 0.05;
         }
 
-        const idealWater = baselineWater + runLoss;
+        // Full-day hydration target
+        const dailyWaterTarget = baselineWater + runLoss;
+
+        // Get the user's local time
+        const now = new Date();
+        const timeNow = now.getHours() + now.getMinutes() / 60;
+
+        // Hydration day: 07:00–22:00
+        const startHour = 7;
+        const endHour = 22;
+        const activeHours = endHour - startHour;
+
+        // Work out how much of the day has passed
+        const elapsedHours = Math.max(
+          0,
+          Math.min(timeNow - startHour, activeHours),
+        );
+
+        const dayProgress = elapsedHours / activeHours;
+
+        // Ideal hydration amount by the current time
+        const idealWater = dailyWaterTarget * dayProgress;
+
+        // Update the label
         document.getElementById("idealWaterHint").innerText =
-          `(Ideal: ${idealWater.toFixed(1)} L)`;
+          `(Ideal by now: ${idealWater.toFixed(1)} L)`;
 
         // Scoring Logic
         // Baseline Performance starts at 1.0 (100%)
@@ -762,6 +785,8 @@
           closeModal();
         }
       };
+
+      setInterval(runPredictor, 60000);
     </script>
     <!-- 1. Floating Action Button -->
 
