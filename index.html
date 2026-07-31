@@ -1139,27 +1139,44 @@
       }
 
       function saveWater() {
-        // 1. Get the values from the inputs
+        // 1. Get values from the modal inputs
         const sizeInput = document.getElementById("bottleSize");
         const manualInput = document.getElementById("manualWater");
+        const countEl = document.getElementById("bottleCount");
 
         const size = parseFloat(sizeInput.value) || 0;
         const manual = parseFloat(manualInput.value) || 0;
+        const bottleCount = parseInt(countEl.innerText) || 0;
 
-        // 2. MATH FIX: Multiply size by the number of bottles!
-        const addedAmount = size * bottles + manual;
+        // 2. Calculate added amount (Bottles * Size + Manual)
+        const addedAmount = size * bottleCount + manual;
 
-        // 3. Add it to the total
-        totalWaterDrank += addedAmount;
+        if (addedAmount > 0) {
+          // 3. Update the total global variable
+          totalWaterDrank += addedAmount;
+          localStorage.setItem("totalWaterDrank", totalWaterDrank);
 
-        // 4. Update the UI (the bars and rings)
-        updateWaterUI();
+          // 4. SYNC TO PREDICTOR (ml to Liters)
+          const predictorInput = document.getElementById("hydrationInput");
+          if (predictorInput) {
+            // Convert to Liters (e.g. 2500ml -> 2.5)
+            predictorInput.value = (totalWaterDrank / 1000).toFixed(2);
 
-        // 5. Reset everything for next time
-        sizeInput.value = "";
+            // Re-run the radar chart math automatically
+            if (typeof runPredictor === "function") runPredictor();
+          }
+
+          // 5. Update all Water UI (bars, text, checkmark)
+          updateWaterUI();
+        }
+
+        // 6. Reset Modal for next time
+        sizeInput.value = localStorage.getItem("savedBottleSize") || "";
         manualInput.value = "";
-        bottles = 1;
-        document.getElementById("bottleCount").innerText = "1";
+        bottles = 0; // Reset internal counter
+        countEl.innerText = "0";
+
+        // 7. Close the modal
         toggleWaterModal();
       }
 
