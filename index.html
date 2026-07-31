@@ -695,7 +695,7 @@
       };
 
       // 2. Profile Management
-      async function saveProfile() {
+      function saveProfile() {
         profile = {
           gender: document.getElementById("gender").value,
           sweatRate: document.getElementById("sweatRate").value,
@@ -713,17 +713,6 @@
         document.getElementById("mainAppContent").classList.remove("hidden");
 
         runPredictor();
-
-        if (auth.currentUser) {
-          try {
-            await setDoc(doc(db, "users", auth.currentUser.uid), profile);
-            console.log("Cloud Sync Successful!");
-          } catch (e) {
-            console.error("Cloud Sync Failed", e);
-          }
-        }
-
-        showPage("track");
       }
 
       function showPage(pageId) {
