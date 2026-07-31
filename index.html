@@ -94,187 +94,452 @@
         </div>
       </div>
     </div>
-
-    <!-- Input Fields (Manually Entered Values) -->
-    <div class="max-w-md mx-auto p-6 pt-12">
-      <div class="space-y-5">
-        <!-- Sleep (Hours & Minutes) -->
-        <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
-          <label class="block text-slate-400 font-medium text-sm mb-2">
-            Sleep
-            <span
-              onclick="showInfo('sleep')"
-              class="text-[11px] text-slate-500 font-normal ml-2 italic cursor-pointer hover:underline hover:text-blue-400 transition-colors"
-            >
-              (Ideal: 8h30m-9h30m)
-            </span>
-          </label>
-
-          <div class="flex items-center gap-2">
-            <input
-              type="number"
-              id="sleepHours"
-              value="8"
-              min="0"
-              max="12"
-              class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg text-center"
-              oninput="runPredictor()"
-            />
-            <span class="text-slate-500 font-bold">h</span>
-            <input
-              type="number"
-              id="sleepMins"
-              value="0"
-              min="0"
-              max="59"
-              step="10"
-              class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg text-center"
-              oninput="runPredictor()"
-            />
-            <span class="text-slate-500 font-bold">m</span>
-          </div>
-        </div>
-
-        <!-- Temperature -->
-        <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
-          <label class="block text-slate-400 font-medium text-sm mb-2"
-            >Temperature (°C)<span
-              onclick="showInfo('temp')"
-              class="text-[11px] text-slate-500 font-normal ml-2 italic cursor-pointer hover:underline hover:text-blue-400 transition-colors"
-              >(Ideal: 3.8-9.9 °C)</span
-            ></label
-          >
-          <input
-            type="number"
-            id="temperature"
-            value="20"
-            step="1"
-            class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
-            oninput="runPredictor()"
-          />
-        </div>
-
-        <!-- Calories -->
-        <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
-          <label class="block text-slate-400 font-medium text-sm mb-2"
-            >Calories Eaten<span
-              id="idealCalHint"
-              onclick="showInfo('cal')"
-              class="text-[11px] text-slate-500 font-normal ml-2 italic cursor-pointer hover:underline hover:text-blue-400 transition-colors"
-              >(Ideal: -- kcal)</span
-            >
-          </label>
-          <input
-            type="number"
-            id="caloriesInput"
-            value="2000"
-            step="1"
-            class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
-            oninput="runPredictor()"
-          />
-        </div>
-
-        <!-- Hydration Input -->
-        <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
-          <label class="block text-slate-400 font-medium text-sm mb-2"
-            >Hydration (L)<span
-              id="idealWaterHint"
-              onclick="showInfo('water')"
-              class="text-[11px] text-slate-500 font-normal ml-2 italic cursor-pointer hover:underline hover:text-blue-400 transition-colors"
-              >(Ideal: -- L)</span
-            ></label
-          >
-          <input
-            type="number"
-            id="hydrationInput"
-            step="0.1"
-            value="2.5"
-            class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
-            oninput="runPredictor()"
-          />
-        </div>
-
-        <!-- Altitude Input -->
-        <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
-          <label class="block text-slate-400 font-medium text-sm mb-2"
-            >Altitude (m)<span
-              id="idealAltHint"
-              onclick="showInfo('alt')"
-              class="text-[11px] text-slate-500 font-normal ml-2 italic cursor-pointer hover:underline hover:text-blue-400 transition-colors"
-              >(Ideal: 0-900m)</span
-            >
-          </label>
-          <input
-            type="number"
-            id="altitudeInput"
-            value="500"
-            class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
-            oninput="runPredictor()"
-          />
-        </div>
-
-        <!-- Goal Distance -->
-        <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
-          <label class="block text-slate-400 font-medium text-sm mb-2"
-            >Goal Distance (km)</label
-          >
-          <input
-            type="number"
-            id="distance"
-            value="5"
-            step="0.5"
-            class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
-            oninput="runPredictor()"
-          />
-        </div>
-
-        <!-- Stretching Toggle -->
-        <div
-          class="bg-slate-800 p-5 rounded-3xl border border-slate-700 flex justify-between items-center"
-        >
-          <span class="text-slate-400 font-medium text-sm"
-            >Did you stretch?</span
-          >
-          <input
-            type="checkbox"
-            id="stretching"
-            class="w-6 h-6 rounded-lg accent-blue-600"
-            onchange="runPredictor()"
-          />
-        </div>
-      </div>
-
-      <!-- Main Content -->
-
-      <div class="text-center mb-8">
-        <p class="text-slate-400 text-lg">Predicted Quality</p>
+    <div id="mainAppContent" class="hidden">
+      <div
+        id="graphsPage"
+        class="page-content hidden min-h-screen flex items-center justify-center"
+      >
         <h1
-          id="qualityText"
-          class="text-7xl font-black text-blue-400 mt-2 italic"
+          class="text-white text-4xl font-bold tracking-widest uppercase opacity-20"
         >
-          --%
+          Hello
         </h1>
       </div>
 
-      <!-- Chart Container -->
-      <div
-        class="relative bg-slate-800/50 p-4 rounded-[2.5rem] mb-10 border border-slate-700 aspect-square flex items-center justify-center"
-      >
-        <canvas id="myChart"></canvas>
-      </div>
+      <!-- Input Fields (Manually Entered Values) -->
+      <div id="predictorPage" class="page-content min-h-screen pb-24 p-6">
+        <div class="max-w-md mx-auto p-6 pt-12">
+          <div class="space-y-5">
+            <!-- Sleep (Hours & Minutes) -->
+            <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
+              <label class="block text-slate-400 font-medium text-sm mb-2">
+                Sleep
+                <span
+                  onclick="showInfo('sleep')"
+                  class="text-[11px] text-slate-500 font-normal ml-2 italic cursor-pointer hover:underline hover:text-blue-400 transition-colors"
+                >
+                  (Ideal: 8h30m-9h30m)
+                </span>
+              </label>
 
-      <!-- Reset Button -->
-      <div class="mt-8 text-center pb-10">
+              <div class="flex items-center gap-2">
+                <input
+                  type="number"
+                  id="sleepHours"
+                  value="8"
+                  min="0"
+                  max="12"
+                  class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg text-center"
+                  oninput="runPredictor()"
+                />
+                <span class="text-slate-500 font-bold">h</span>
+                <input
+                  type="number"
+                  id="sleepMins"
+                  value="0"
+                  min="0"
+                  max="59"
+                  step="10"
+                  class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg text-center"
+                  oninput="runPredictor()"
+                />
+                <span class="text-slate-500 font-bold">m</span>
+              </div>
+            </div>
+
+            <!-- Temperature -->
+            <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
+              <label class="block text-slate-400 font-medium text-sm mb-2"
+                >Temperature (°C)<span
+                  onclick="showInfo('temp')"
+                  class="text-[11px] text-slate-500 font-normal ml-2 italic cursor-pointer hover:underline hover:text-blue-400 transition-colors"
+                  >(Ideal: 3.8-9.9 °C)</span
+                ></label
+              >
+              <input
+                type="number"
+                id="temperature"
+                value="20"
+                step="1"
+                class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+                oninput="runPredictor()"
+              />
+            </div>
+
+            <!-- Calories -->
+            <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
+              <label class="block text-slate-400 font-medium text-sm mb-2"
+                >Calories Eaten<span
+                  id="idealCalHint"
+                  onclick="showInfo('cal')"
+                  class="text-[11px] text-slate-500 font-normal ml-2 italic cursor-pointer hover:underline hover:text-blue-400 transition-colors"
+                  >(Ideal: -- kcal)</span
+                >
+              </label>
+              <input
+                type="number"
+                id="caloriesInput"
+                value="2000"
+                step="1"
+                class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+                oninput="runPredictor()"
+              />
+            </div>
+
+            <!-- Hydration Input -->
+            <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
+              <label class="block text-slate-400 font-medium text-sm mb-2"
+                >Hydration (L)<span
+                  id="idealWaterHint"
+                  onclick="showInfo('water')"
+                  class="text-[11px] text-slate-500 font-normal ml-2 italic cursor-pointer hover:underline hover:text-blue-400 transition-colors"
+                  >(Ideal: -- L)</span
+                ></label
+              >
+              <input
+                type="number"
+                id="hydrationInput"
+                step="0.1"
+                value="0"
+                class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+                oninput="runPredictor()"
+              />
+            </div>
+
+            <!-- Altitude Input -->
+            <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
+              <label class="block text-slate-400 font-medium text-sm mb-2"
+                >Altitude (m)<span
+                  id="idealAltHint"
+                  onclick="showInfo('alt')"
+                  class="text-[11px] text-slate-500 font-normal ml-2 italic cursor-pointer hover:underline hover:text-blue-400 transition-colors"
+                  >(Ideal: 0-900m)</span
+                >
+              </label>
+              <input
+                type="number"
+                id="altitudeInput"
+                value="500"
+                class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+                oninput="runPredictor()"
+              />
+            </div>
+
+            <!-- Goal Distance -->
+            <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
+              <label class="block text-slate-400 font-medium text-sm mb-2"
+                >Goal Distance (km)</label
+              >
+              <input
+                type="number"
+                id="distance"
+                value="5"
+                step="0.5"
+                class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+                oninput="runPredictor()"
+              />
+            </div>
+
+            <!-- Stretching Toggle -->
+            <div
+              class="bg-slate-800 p-5 rounded-3xl border border-slate-700 flex justify-between items-center"
+            >
+              <span class="text-slate-400 font-medium text-sm"
+                >Did you stretch?</span
+              >
+              <input
+                type="checkbox"
+                id="stretching"
+                class="w-6 h-6 rounded-lg accent-blue-600"
+                onchange="runPredictor()"
+              />
+            </div>
+          </div>
+
+          <!-- Main Content -->
+
+          <div class="text-center mb-8">
+            <p class="text-slate-400 text-lg">Predicted Quality</p>
+            <h1
+              id="qualityText"
+              class="text-7xl font-black text-blue-400 mt-2 italic"
+            >
+              --%
+            </h1>
+          </div>
+
+          <!-- Chart Container -->
+          <div
+            class="relative bg-slate-800/50 p-4 rounded-[2.5rem] mb-10 border border-slate-700 aspect-square flex items-center justify-center"
+          >
+            <canvas id="myChart"></canvas>
+          </div>
+
+          <!-- Reset Button -->
+          <div class="mt-8 text-center pb-10">
+            <button
+              onclick="resetProfile()"
+              class="text-slate-500 text-xs hover:text-white underline uppercase tracking-widest"
+            >
+              Reset Profile
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="trackPage" class="page-content hidden min-h-screen p-6">
+        <h2 class="text-2xl font-bold text-white mb-6">Activity Tracking</h2>
+
+        <!-- Big "Add Run" Button -->
         <button
-          onclick="resetProfile()"
-          class="text-slate-500 text-xs hover:text-white underline uppercase tracking-widest"
+          onclick="toggleModal()"
+          class="w-full bg-slate-800 p-5 rounded-3xl border border-slate-700 flex items-center justify-between group active:scale-[0.98] transition-all"
         >
-          Reset Profile
+          <div class="flex items-center gap-4">
+            <!-- 1. The Glowing Runner Icon -->
+            <div
+              class="p-[1.5px] rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 shrink-0"
+            >
+              <div
+                class="bg-slate-800 w-14 h-14 flex items-center justify-center rounded-[15px]"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="w-8 h-8 text-white"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <path d="M11.007 5a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                  <path d="M4 17l5 1l.75 -1.5" />
+                  <path d="M15 21v-4l-4 -3l1 -6" />
+                  <path d="M7 12v-3l5 -1l3 3l3 1" />
+                </svg>
+              </div>
+            </div>
+            <div class="text-left">
+              <span class="block text-white font-bold text-lg"
+                >Add New Run</span
+              >
+              <span class="block text-slate-400 text-sm italic"
+                >Log your latest performance</span
+              >
+            </div>
+          </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 text-slate-500 group-hover:text-blue-400 transition-colors"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </button>
+
+        <!-- Big "Water" Button -->
+        <button
+          onclick="toggleWaterModal()"
+          class="w-full bg-slate-800 p-5 rounded-3xl border border-slate-700 mb-4 transition-all active:scale-95 group"
+        >
+          <!-- Top Row: Icon, Text, and Arrow -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-4">
+              <!-- Your Glowing Water Icon Container -->
+              <div
+                class="p-[1.5px] rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 shrink-0"
+              >
+                <div
+                  class="bg-slate-800 w-12 h-12 flex items-center justify-center rounded-[13px]"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-bottle"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M10 5h4v-2a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1v2" />
+                    <path
+                      d="M14 3.5c0 1.626 .507 3.212 1.45 4.537l.05 .07a8.093 8.093 0 0 1 1.5 4.694v6.199a2 2 0 0 1 -2 2h-6a2 2 0 0 1 -2 -2v-6.2c0 -1.682 .524 -3.322 1.5 -4.693l.05 -.07a7.823 7.823 0 0 0 1.45 -4.537"
+                    />
+                    <path
+                      d="M7 14.803a2.4 2.4 0 0 0 1 -.803a2.4 2.4 0 0 1 2 -1a2.4 2.4 0 0 1 2 1a2.4 2.4 0 0 0 2 1a2.4 2.4 0 0 0 2 -1a2.4 2.4 0 0 1 1 -.805"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div class="text-left">
+                <span class="block text-white font-bold text-lg">Water</span>
+                <span id="waterText" class="text-slate-400 text-xs font-mono"
+                  >0 / 3000 ml</span
+                >
+                <div
+                  id="waterCheckmark"
+                  class="hidden md:hidden text-emerald-500"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M5 12l5 5l10 -10" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- The Arrow from your line 380 -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 text-slate-500 group-hover:text-blue-400 transition-colors"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </div>
+
+          <!-- Bottom Row: The Progress Bar -->
+          <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden">
+            <div
+              id="waterProgressBar"
+              class="h-full bg-green-500 transition-all duration-500"
+              style="width: 0%"
+            ></div>
+          </div>
         </button>
       </div>
+      <div id="trackPage" class="page-content hidden">
+        <h2 class="text-center mt-20 text-slate-400">
+          Run Tracking coming soon...
+        </h2>
+      </div>
+      <!-- Bottom Navigation Bar -->
+      <nav
+        class="md:hidden fixed bottom-0 left-0 right-0 bg-[#0f172a] border-t border-slate-800 flex items-center h-20 pb-2 z-50"
+      >
+        <!-- Graphs Tab -->
+        <button
+          onclick="showPage('graphsPage')"
+          class="flex-1 flex flex-col items-center justify-center gap-1 text-slate-400 transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="w-6 h-6"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M3 3v18h18" />
+            <path d="M20 18v3" />
+            <path d="M16 16v5" />
+            <path d="M12 13v8" />
+            <path d="M8 16v5" />
+            <path d="M3 11c6 0 5 -5 9 -5s3 5 9 5" />
+          </svg>
+          <span class="text-[10px] uppercase tracking-widest">Graphs</span>
+        </button>
+
+        <!-- Vertical Divider -->
+        <div class="h-10 w-[1px] bg-slate-800"></div>
+
+        <!-- Predictor Tab -->
+        <button
+          onclick="showPage('predictorPage')"
+          class="flex-1 flex flex-col items-center justify-center gap-1 text-blue-400 font-bold"
+        >
+          <div class="w-6 h-6 flex items-center justify-center">
+            <div
+              class="w-2 h-2 bg-blue-400 rounded-full shadow-[0_0_10px_#60a5fa]"
+            ></div>
+          </div>
+          <span class="text-xs uppercase tracking-[0.15em]">Predictor</span>
+        </button>
+
+        <!-- Vertical Divider -->
+        <div class="h-10 w-[1px] bg-slate-800"></div>
+
+        <!-- Track Tab -->
+        <button
+          onclick="showPage('trackPage')"
+          class="flex-1 flex flex-col items-center justify-center gap-1 text-slate-400 transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="w-6 h-6"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path
+              d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"
+            />
+            <path
+              d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2"
+            />
+            <path d="M9 17v-5" />
+            <path d="M12 17v-1" />
+            <path d="M15 17v-3" />
+          </svg>
+          <span class="text-[10px] uppercase tracking-widest">Track</span>
+        </button>
+      </nav>
     </div>
 
     <script>
+      function checkDailyReset() {
+        const today = new Date().toDateString();
+        const lastSavedDate = localStorage.getItem("lastWaterDate");
+
+        if (lastSavedDate && lastSavedDate !== today) {
+          totalWaterDrank = 0;
+          localStorage.setItem("totalWaterDrank", 0);
+        }
+        localStorage.setItem("lastWaterDate", today);
+      }
+      checkDailyReset();
       let myChart = null;
       let profile = null;
 
@@ -284,6 +549,8 @@
         if (saved) {
           profile = JSON.parse(saved);
           document.getElementById("onboarding").classList.add("hidden");
+          // Show the app if data already exists
+          document.getElementById("mainAppContent").classList.remove("hidden");
           runPredictor();
         }
       };
@@ -297,9 +564,48 @@
           weight: parseFloat(document.getElementById("weight").value),
           height: parseFloat(document.getElementById("height").value),
         };
+
         localStorage.setItem("runProfileData", JSON.stringify(profile));
+
+        // 1. Hide the setup screen
         document.getElementById("onboarding").classList.add("hidden");
+
+        // 2. UNLOCK the main app content (Add this line!)
+        document.getElementById("mainAppContent").classList.remove("hidden");
+
         runPredictor();
+      }
+
+      function showPage(pageId) {
+        // 1. Hide all pages
+        document.querySelectorAll(".page-content").forEach((page) => {
+          page.classList.add("hidden");
+        });
+
+        // 2. Show the target page
+        const targetPage = document.getElementById(pageId);
+        if (targetPage) {
+          targetPage.classList.remove("hidden");
+        }
+
+        // 3. Reset all nav buttons colors
+        document.querySelectorAll("nav button").forEach((btn) => {
+          btn.classList.remove("text-blue-400", "font-bold");
+          btn.classList.add("text-slate-400");
+        });
+
+        // 4. Find the button that was clicked and light it up
+        // We use 'target' or a simpler search to avoid the "null" error
+        const clickedBtn = document.querySelector(
+          `button[onclick*="${pageId}"]`,
+        );
+
+        if (clickedBtn) {
+          clickedBtn.classList.replace("text-slate-400", "text-blue-400");
+          clickedBtn.classList.add("font-bold");
+        }
+
+        window.scrollTo(0, 0);
       }
 
       function resetProfile() {
@@ -348,6 +654,8 @@
 
         // Full-day hydration target
         const dailyWaterTarget = baselineWater + runLoss;
+        localStorage.setItem("dailyWaterGoal", dailyWaterTarget);
+        updateWaterUI(dailyWaterTarget);
 
         // Get the user's local time
         const now = new Date();
@@ -787,14 +1095,189 @@
       };
 
       setInterval(runPredictor, 60000);
+
+      let totalWaterDrank = 0;
+      let bottles = 0;
+
+      function toggleWaterModal() {
+        const modal = document.getElementById("waterModal");
+        if (modal) {
+          modal.classList.toggle("hidden");
+
+          // When the modal opens...
+          if (!modal.classList.contains("hidden")) {
+            // Check memory for previous bottle size
+            const savedSize = localStorage.getItem("savedBottleSize");
+            if (savedSize) {
+              document.getElementById("bottleSize").value = savedSize;
+              checkVolume(); // Unlock buttons if size was found
+            }
+            // Start count at 0
+            bottles = 0;
+            document.getElementById("bottleCount").innerText = "0";
+          }
+        }
+      }
+      function checkVolume() {
+        const size = document.getElementById("bottleSize").value;
+        const stepper = document.getElementById("stepperContainer");
+
+        if (size > 0 && size !== "") {
+          // 'flex' makes it appear and keeps the layout nice
+          stepper.style.display = "flex";
+          localStorage.setItem("savedBottleSize", size);
+        } else {
+          // 'none' removes it from the screen entirely
+          stepper.style.display = "none";
+        }
+      }
+
+      function updateWaterStepper(val) {
+        bottles = Math.max(0, bottles + val);
+        const countEl = document.getElementById("bottleCount");
+        if (countEl) countEl.innerText = bottles;
+      }
+
+      function saveWater() {
+        // 1. Get the values from the inputs
+        const sizeInput = document.getElementById("bottleSize");
+        const manualInput = document.getElementById("manualWater");
+
+        const size = parseFloat(sizeInput.value) || 0;
+        const manual = parseFloat(manualInput.value) || 0;
+
+        // 2. MATH FIX: Multiply size by the number of bottles!
+        const addedAmount = size * bottles + manual;
+
+        // 3. Add it to the total
+        totalWaterDrank += addedAmount;
+
+        // 4. Update the UI (the bars and rings)
+        updateWaterUI();
+
+        // 5. Reset everything for next time
+        sizeInput.value = "";
+        manualInput.value = "";
+        bottles = 1;
+        document.getElementById("bottleCount").innerText = "1";
+        toggleWaterModal();
+      }
+
+      function updateWaterUI(liveGoal = null) {
+        let goal;
+
+        // 1. If we just moved a slider, use that live value
+        if (liveGoal) {
+          goal = Math.round(liveGoal * 1000);
+        } else {
+          // 2. Otherwise, check if we saved a goal recently
+          const savedGoal = localStorage.getItem("dailyWaterGoal");
+          if (savedGoal) {
+            goal = Math.round(parseFloat(savedGoal) * 1000);
+          } else {
+            // 3. Absolute fallback to profile/default
+            const profile = JSON.parse(localStorage.getItem("runnerProfile"));
+            const storedGoal =
+              profile && profile.idealWater ? profile.idealWater : 2.5;
+            goal = Math.round(storedGoal * 1000);
+          }
+        }
+
+        // Safety check for tiny numbers
+        if (goal < 100) goal = 2500;
+
+        const percentage = Math.min(100, (totalWaterDrank / goal) * 100);
+
+        // Update Mobile Bar
+        const bar = document.getElementById("waterProgressBar");
+        const text = document.getElementById("waterText");
+        if (bar) bar.style.width = percentage + "%";
+        if (text) text.innerText = `${totalWaterDrank} / ${goal} ml`;
+
+        // Update Desktop Ring
+        const borderDesktop = document.getElementById("waterBorderDesktop");
+        if (borderDesktop) {
+          borderDesktop.style.background = `conic-gradient(#22c55e 0% ${percentage}%, #3b82f6 ${percentage}%, #a855f7 70%, #ec4899 100%)`;
+        }
+      }
+
+      window.addEventListener("load", updateWaterUI);
     </script>
     <!-- 1. Floating Action Button -->
 
     <button
       onclick="toggleModal()"
-      class="fixed top-6 right-6 w-14 h-14 rounded-full bg-slate-900/40 backdrop-blur-md border border-blue-500/50 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.5)] flex items-center justify-center text-3xl font-light transition-all hover:scale-110 hover:shadow-[0_0_30px_rgba(59,130,246,0.8)] z-50 ring-4 ring-blue-500/10"
+      class="hidden md:flex fixed top-6 right-6 z-50 transition-all active:scale-95 outline-none"
     >
-      <span class="-mt-1">+</span>
+      <!-- 1. Gradient Outer Layer (The Border) -->
+      <div
+        class="p-[1.5px] rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 shrink-0"
+      >
+        <!-- Inner Layer: Matches the page background color -->
+        <div
+          class="bg-slate-800 w-14 h-14 flex items-center justify-center rounded-[15px]"
+        >
+          <!-- The Runner Icon -->
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="w-8 h-8 text-white"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M11.007 5a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+            <path d="M4 17l5 1l.75 -1.5" />
+            <path d="M15 21v-4l-4 -3l1 -6" />
+            <path d="M7 12v-3l5 -1l3 3l3 1" />
+          </svg>
+        </div>
+      </div>
+    </button>
+
+    <!-- 2. Floating Water Button -->
+    <!-- Desktop Water Button -->
+    <button
+      onclick="toggleWaterModal()"
+      class="hidden md:flex fixed top-24 right-6 z-50 transition-all active:scale-95 outline-none"
+    >
+      <!-- This div ID now controls the WHOLE border color -->
+      <div
+        id="waterBorderDesktop"
+        class="p-[1.5px] rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 shrink-0 transition-all duration-700"
+      >
+        <!-- Inner box matches the runner exactly -->
+        <div
+          class="bg-slate-800 w-14 h-14 flex items-center justify-center rounded-[15px]"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="icon icon-tabler icons-tabler-outline icon-tabler-bottle"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M10 5h4v-2a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1v2" />
+            <path
+              d="M14 3.5c0 1.626 .507 3.212 1.45 4.537l.05 .07a8.093 8.093 0 0 1 1.5 4.694v6.199a2 2 0 0 1 -2 2h-6a2 2 0 0 1 -2 -2v-6.2c0 -1.682 .524 -3.322 1.5 -4.693l.05 -.07a7.823 7.823 0 0 0 1.45 -4.537"
+            />
+            <path
+              d="M7 14.803a2.4 2.4 0 0 0 1 -.803a2.4 2.4 0 0 1 2 -1a2.4 2.4 0 0 1 2 1a2.4 2.4 0 0 0 2 1a2.4 2.4 0 0 0 2 -1a2.4 2.4 0 0 1 1 -.805"
+            />
+          </svg>
+        </div>
+      </div>
     </button>
 
     <!-- 2. Modal Overlay -->
@@ -856,6 +1339,119 @@
         </div>
       </div>
     </div>
+    <!-- Water Tracking Modal -->
+    <div
+      id="waterModal"
+      class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-slate-900 w-full max-w-sm rounded-3xl border border-slate-700 p-6 text-center"
+      >
+        <!-- Icon Header -->
+        <div class="flex justify-center mb-6">
+          <div
+            class="bg-slate-900 w-full h-full flex items-center justify-center rounded-[15px]"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="icon icon-tabler icons-tabler-outline icon-tabler-bottle"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M10 5h4v-2a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1v2" />
+              <path
+                d="M14 3.5c0 1.626 .507 3.212 1.45 4.537l.05 .07a8.093 8.093 0 0 1 1.5 4.694v6.199a2 2 0 0 1 -2 2h-6a2 2 0 0 1 -2 -2v-6.2c0 -1.682 .524 -3.322 1.5 -4.693l.05 -.07a7.823 7.823 0 0 0 1.45 -4.537"
+              />
+              <path
+                d="M7 14.803a2.4 2.4 0 0 0 1 -.803a2.4 2.4 0 0 1 2 -1a2.4 2.4 0 0 1 2 1a2.4 2.4 0 0 0 2 1a2.4 2.4 0 0 0 2 -1a2.4 2.4 0 0 1 1 -.805"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <h2 class="text-xl font-bold text-white mb-2">Log Hydration</h2>
+
+        <!-- Volume Preset -->
+        <div class="mb-6">
+          <label class="block text-slate-400 text-sm mb-2"
+            >Bottle Volume (ml)</label
+          >
+          <input
+            type="number"
+            id="bottleSize"
+            oninput="checkVolume()"
+            placeholder="e.g. 500"
+            class="w-full bg-slate-800 text-white p-3 rounded-xl border-none outline-none text-center"
+          />
+        </div>
+
+        <!-- Stepper -->
+        <div
+          id="stepperContainer"
+          style="display: none"
+          class="flex items-center justify-between bg-slate-800 p-4 rounded-2xl mb-6 transition-all duration-300"
+        >
+          <button
+            onclick="updateWaterStepper(-1)"
+            class="w-10 h-10 bg-slate-700 rounded-full text-white text-xl font-bold"
+          >
+            -
+          </button>
+          <div class="text-center">
+            <!-- Starts at 0 -->
+            <span id="bottleCount" class="text-2xl font-bold text-white"
+              >0</span
+            >
+            <span
+              class="block text-[10px] text-slate-500 uppercase tracking-widest"
+              >Bottles</span
+            >
+          </div>
+          <button
+            onclick="updateWaterStepper(1)"
+            class="w-10 h-10 bg-blue-600 rounded-full text-white text-xl font-bold"
+          >
+            +
+          </button>
+        </div>
+
+        <!-- Manual Input -->
+        <div class="mb-6">
+          <label class="block text-slate-400 text-sm mb-2"
+            >Or Manual Amount (ml)</label
+          >
+          <input
+            type="number"
+            id="manualWater"
+            class="w-full bg-slate-800 text-white p-3 rounded-xl border-none outline-none text-center"
+            placeholder="Add extra ml"
+          />
+        </div>
+
+        <div class="flex gap-3">
+          <button
+            onclick="toggleWaterModal()"
+            class="flex-1 py-3 text-slate-400 font-bold"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="saveWater()"
+            class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Explanation Modal -->
     <div
       id="infoModal"
