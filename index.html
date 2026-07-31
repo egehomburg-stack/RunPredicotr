@@ -18,6 +18,56 @@
     <link rel="icon" type="image/png" href="logo1.png" />
   </head>
   <body class="bg-[#0a253e] font-sans text-slate-200 min-h-screen">
+    <!-- Auth Modal -->
+    <div
+      id="authPage"
+      class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4 hidden"
+    >
+      <div
+        class="bg-slate-900 border border-slate-700 p-6 rounded-2xl w-full max-w-md shadow-2xl"
+      >
+        <h2 id="authTitle" class="text-xl font-bold mb-4">Sign In</h2>
+
+        <div class="space-y-4">
+          <input
+            type="email"
+            id="authEmail"
+            placeholder="Email"
+            class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white"
+          />
+          <input
+            type="password"
+            id="authPassword"
+            placeholder="Password"
+            class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white"
+          />
+
+          <button
+            onclick="handleAuth()"
+            id="authBtn"
+            class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition-all"
+          >
+            Login
+          </button>
+
+          <p class="text-center text-sm text-slate-400">
+            Don't have an account?
+            <button
+              onclick="toggleAuthMode()"
+              class="text-blue-400 font-semibold"
+            >
+              Sign Up
+            </button>
+          </p>
+        </div>
+        <button
+          onclick="closeAuthModal()"
+          class="w-full mt-4 text-slate-500 text-sm"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
     <!-- Onboarding Modal -->
     <div
       id="onboarding"
@@ -528,7 +578,96 @@
       </nav>
     </div>
 
-    <script>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      import {
+        getAuth,
+        onAuthStateChanged,
+        signInWithEmailAndPassword,
+        createUserWithEmailAndPassword,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+      import {
+        getFirestore,
+        doc,
+        setDoc,
+        getDoc,
+        onSnapshot,
+      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyAo2D9F5Gvj2mhhd9f-F_fTtJuU-8pVNG8",
+        authDomain: "run-predictor-pro.firebaseapp.com",
+        projectId: "run-predictor-pro",
+        storageBucket: "run-predictor-pro.firebasestorage.app",
+        messagingSenderId: "334417276283",
+        appId: "1:334417276283:web:6ab1f9668227a292bae1de",
+        measurementId: "G-P5DFQVP2F6",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      let isSignUp = false;
+
+      // 1. Switch between Login and Sign Up
+      function toggleAuthMode() {
+        isSignUp = !isSignUp;
+        document.getElementById("authTitle").innerText = isSignUp
+          ? "Create Account"
+          : "Sign In";
+        document.getElementById("authBtn").innerText = isSignUp
+          ? "Sign Up"
+          : "Login";
+      }
+
+      // 2. Handle the actual Login/Sign Up
+      async function handleAuth() {
+        const email = document.getElementById("authEmail").value;
+        const password = document.getElementById("authPassword").value;
+
+        if (!email || !password) return alert("Please fill in all fields");
+
+        try {
+          if (isSignUp) {
+            // This is for new accounts
+            await createUserWithEmailAndPassword(auth, email, password);
+            console.log("Account Created!");
+          } else {
+            // This is for existing accounts (Login)
+            await signInWithEmailAndPassword(auth, email, password);
+            console.log("Logged In!");
+          }
+        } catch (error) {
+          // If you get 'email-already-in-use', just switch to login!
+          if (error.code === "auth/email-already-in-use") {
+            alert("Email already exists. Switching to Login...");
+            isSignUp = false;
+            toggleAuthMode(); // This will visually update the button to say 'Login'
+          } else {
+            alert(error.message);
+          }
+        }
+      }
+
+      // 3. THE MAGIC DOOR: Watch for Login state
+      onAuthStateChanged(auth, (user) => {
+        const authPage = document.getElementById("authPage");
+        const mainAppContent = document.getElementById("mainAppContent");
+
+        if (user) {
+          // User is logged in! Hide login, show app
+          authPage.classList.add("hidden");
+          mainAppContent.classList.remove("hidden");
+          console.log("Logged in as:", user.email);
+        } else {
+          // No user! Show login, hide app
+          authPage.classList.remove("hidden");
+          mainAppContent.classList.add("hidden");
+        }
+      });
+
       function checkDailyReset() {
         const today = new Date().toDateString();
         const lastSavedDate = localStorage.getItem("lastWaterDate");
@@ -556,7 +695,7 @@
       };
 
       // 2. Profile Management
-      function saveProfile() {
+      async function saveProfile() {
         profile = {
           gender: document.getElementById("gender").value,
           sweatRate: document.getElementById("sweatRate").value,
@@ -574,6 +713,17 @@
         document.getElementById("mainAppContent").classList.remove("hidden");
 
         runPredictor();
+
+        if (auth.currentUser) {
+          try {
+            await setDoc(doc(db, "users", auth.currentUser.uid), profile);
+            console.log("Cloud Sync Successful!");
+          } catch (e) {
+            console.error("Cloud Sync Failed", e);
+          }
+        }
+
+        showPage("track");
       }
 
       function showPage(pageId) {
@@ -629,6 +779,13 @@
         const stretched = document.getElementById("stretching").checked;
         const water =
           parseFloat(document.getElementById("hydrationInput").value) || 0;
+        totalWaterDrank = water * 1000;
+        localStorage.setItem("totalWaterDrank", totalWaterDrank);
+
+        // Update the progress bar and checkmark on the mobile view
+        if (typeof updateWaterUI === "function") {
+          updateWaterUI();
+        }
         const alt =
           parseFloat(document.getElementById("altitudeInput").value) || 0;
 
@@ -1219,6 +1376,25 @@
       }
 
       window.addEventListener("load", updateWaterUI);
+
+      // Expose all functions to the HTML (needed for type="module")
+      window.checkDailyReset = checkDailyReset;
+      window.saveProfile = saveProfile;
+      window.showPage = showPage;
+      window.resetProfile = resetProfile;
+      window.runPredictor = runPredictor;
+      window.updateChart = updateChart;
+      window.toggleModal = toggleModal;
+      window.saveRun = saveRun;
+      window.showInfo = showInfo;
+      window.closeModal = closeModal;
+      window.toggleWaterModal = toggleWaterModal;
+      window.checkVolume = checkVolume;
+      window.updateWaterStepper = updateWaterStepper;
+      window.saveWater = saveWater;
+      window.updateWaterUI = updateWaterUI;
+      window.toggleAuthMode = toggleAuthMode;
+      window.handleAuth = handleAuth;
     </script>
     <!-- 1. Floating Action Button -->
 
