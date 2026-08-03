@@ -1426,12 +1426,12 @@
               .then(() => {
                 readerDiv.classList.add("hidden");
                 // Now that camera is dead, show the data
-                fetchFoodData(decodedText);
+                fetchFoodData(String(decodedText).trim());
               })
               .catch((err) => {
                 console.error("Stop error:", err);
                 // Fallback if stop fails
-                fetchFoodData(decodedText);
+                fetchFoodData(String(decodedText).trim());
               });
           })
           .catch((err) => {
@@ -1441,16 +1441,34 @@
       }
 
       // Create a helper function to kill the camera
-      function stopScanner() {
-        if (html5QrCode) {
-          html5QrCode
-            .stop()
-            .then(() => {
-              document.getElementById("barcode-reader").classList.add("hidden");
-              html5QrCode = null;
-            })
-            .catch((err) => console.log("Stop error", err));
+      // Helper function to stop the camera safely
+      async function stopScanner() {
+        const readerDiv = document.getElementById("barcode-reader");
+
+        if (!html5QrCode) {
+          readerDiv?.classList.add("hidden");
+          return;
         }
+
+        try {
+          const state = html5QrCode.getState();
+
+          // 2 = scanning, 3 = paused
+          if (state === 2 || state === 3) {
+            await html5QrCode.stop();
+          }
+        } catch (error) {
+          console.warn("Scanner was already stopped:", error);
+        }
+
+        try {
+          html5QrCode.clear();
+        } catch (error) {
+          console.warn("Scanner clear skipped:", error);
+        }
+
+        html5QrCode = null;
+        readerDiv?.classList.add("hidden");
       }
 
       // Handle Manual Calories
@@ -1512,7 +1530,13 @@
       let tempProductName = "";
 
       function fetchFoodData(barcode) {
+        barcode = String(barcode).trim();
+
         console.log("Fetching food data for:", barcode);
+
+        const apiUrl = `https://world.openfoodfacts.org/api/v2/product/${barcode}.json`;
+
+        console.log("Request URL:", apiUrl);
 
         // Safety check: ensure result card exists
         const resultCard = document.getElementById("scan-result-card");
@@ -1524,6 +1548,8 @@
         fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`)
           .then((res) => res.json())
           .then((data) => {
+            console.log("API status:", data.status);
+            console.log("API code:", data.code);
             if (data.status === 1) {
               const product = data.product;
 
@@ -1585,6 +1611,17 @@
           toggleEatModal();
         } else {
           alert("Please enter grams!");
+        }
+      }
+
+      async function cancelScanner() {
+        await stopScanner();
+
+        const modal = document.getElementById("eatModal");
+
+        if (modal) {
+          modal.classList.add("hidden");
+          modal.classList.remove("flex");
         }
       }
     </script>
@@ -1980,7 +2017,7 @@
           <!-- Bottom Actions -->
           <div class="flex gap-3">
             <button
-              onclick="toggleEatModal()"
+              onclick="cancelScanner()"
               class="flex-1 py-3 text-slate-400 font-bold hover:text-white transition-all"
             >
               Cancel
