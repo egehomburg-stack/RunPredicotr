@@ -93,6 +93,7 @@
         </div>
       </div>
     </div>
+
     <div id="mainAppContent" class="hidden">
       <div
         id="graphsPage"
@@ -102,6 +103,17 @@
           class="text-white text-4xl font-bold tracking-widest uppercase opacity-20"
         >
           Hello
+        </h1>
+      </div>
+
+      <div
+        id="preparePage"
+        class="page-content hidden min-h-screen flex items-center justify-center"
+      >
+        <h1
+          class="text-white text-4xl font-bold tracking-widest uppercase opacity-20"
+        >
+          Ciao
         </h1>
       </div>
 
@@ -543,6 +555,17 @@
           Run Tracking coming soon...
         </h2>
       </div>
+
+      <div
+        id="zonesPage"
+        class="page-content hidden min-h-screen flex items-center justify-center"
+      >
+        <h1
+          class="text-white text-4xl font-bold tracking-widest uppercase opacity-20"
+        >
+          Zone
+        </h1>
+      </div>
       <!-- Bottom Navigation Bar -->
       <nav
         class="md:hidden fixed bottom-0 left-0 right-0 bg-[#0f172a] border-t border-slate-800 flex items-center h-20 pb-2 z-50"
@@ -573,6 +596,36 @@
             <path d="M3 11c6 0 5 -5 9 -5s3 5 9 5" />
           </svg>
           <span class="text-[10px] uppercase tracking-widest">Graphs</span>
+        </button>
+
+        <!-- Vertical Divider -->
+        <div class="h-10 w-[1px] bg-slate-800"></div>
+
+        <!-- Prepare Tab -->
+        <button
+          onclick="showPage('preparePage')"
+          class="flex-1 flex flex-col items-center justify-center gap-1 text-slate-400 transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="icon icon-tabler icons-tabler-outline icon-tabler-target-arrow"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+            <path d="M12 7a5 5 0 1 0 5 5" />
+            <path d="M13 3.055a9 9 0 1 0 7.941 7.945" />
+            <path d="M15 6v3h3l3 -3h-3v-3l-3 3" />
+            <path d="M15 9l-3 3" />
+          </svg>
+          <span class="text-[10px] uppercase tracking-widest">Prepare</span>
         </button>
 
         <!-- Vertical Divider -->
@@ -623,6 +676,37 @@
             <path d="M15 17v-3" />
           </svg>
           <span class="text-[10px] uppercase tracking-widest">Track</span>
+        </button>
+
+        <!-- Vertical Divider -->
+        <div class="h-10 w-[1px] bg-slate-800"></div>
+
+        <!-- Zones Tab -->
+        <button
+          onclick="showPage('zonesPage')"
+          class="flex-1 flex flex-col items-center justify-center gap-1 text-slate-400 transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="icon icon-tabler icons-tabler-outline icon-tabler-timeline"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M4 16l6 -7l5 5l5 -6" />
+            <path d="M14 14a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+            <path d="M9 9a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+            <path d="M3 16a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+            <path d="M19 8a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+          </svg>
+
+          <span class="text-[10px] uppercase tracking-widest">Zones</span>
         </button>
       </nav>
     </div>
