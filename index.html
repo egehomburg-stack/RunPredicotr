@@ -1511,37 +1511,21 @@
             tempProductName = product.product_name || "Unknown Product";
 
             if (tempKcalPer100 > 0) {
-              // 1. FIRST, kill the scanner completely
-              if (html5QrCode) {
-                await html5QrCode
-                  .stop()
-                  .catch((err) => console.log("Stop Error:", err));
-              }
-
-              // 2. Hide the camera container and the scan button
+              // 1. Hide the scanner reader
               document.getElementById("barcode-reader").classList.add("hidden");
-              document.getElementById("scanBtn").classList.add("hidden");
-              document
-                .getElementById("manualCalInput")
-                .parentElement.classList.add("hidden");
 
-              // 3. Populate and Show the Card
+              // 2. Show and fill the Result Card
               const card = document.getElementById("scan-result-card");
               document.getElementById("res-name").innerText = tempProductName;
               document.getElementById("res-info").innerText =
                 `${Math.round(tempKcalPer100)} kcal / 100g`;
-
-              // FORCE the display remove 'hidden'
-              card.style.display = "block"; // Using style directly is safer on mobile
               card.classList.remove("hidden");
-
-              console.log("Card should be visible now");
             }
           } else {
             alert("Product not found.");
           }
         } catch (error) {
-          console.error("Fetch Error:", error);
+          alert("Scanner connection error.");
         }
       }
 
