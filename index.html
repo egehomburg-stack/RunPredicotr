@@ -15,6 +15,22 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="icon" type="image/png" href="logo1.png" />
+    <style>
+      #barcode-reader {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        border-radius: 2rem;
+        background: #111827;
+      }
+
+      #barcode-reader video {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+      }
+    </style>
   </head>
   <body class="bg-[#0a253e] font-sans text-slate-200 min-h-screen">
     <!-- Onboarding Modal -->
@@ -1407,15 +1423,14 @@
             Html5QrcodeSupportedFormats.EAN_8,
             Html5QrcodeSupportedFormats.UPC_A,
             Html5QrcodeSupportedFormats.UPC_E,
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.QR_CODE,
           ],
         });
 
         const config = {
           fps: 20,
-          qrbox: { width: 280, height: 160 },
-          aspectRatio: 1.0,
+          qrbox: { width: 350, height: 160 },
+          aspectRatio: 1.777,
+          disableFlip: false,
         };
 
         html5QrCode
