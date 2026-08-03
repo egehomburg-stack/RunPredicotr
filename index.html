@@ -6,6 +6,8 @@
     <title>Run Predictor Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
     <link
       rel="touch-icon"
       href="https://egehomburg-stack.github.io/logo1.png?v=5"
@@ -626,21 +628,37 @@
     </div>
 
     <script>
-      function checkDailyReset() {
-        const today = new Date().toDateString();
-        const lastSavedDate = localStorage.getItem("lastWaterDate");
-
-        if (lastSavedDate && lastSavedDate !== today) {
-          totalWaterDrank = 0;
-          localStorage.setItem("totalWaterDrank", 0);
-        }
-        localStorage.setItem("lastWaterDate", today);
-      }
-      checkDailyReset();
+      let profile = null; // Declare it here so everyone can see it
       let myChart = null;
-      let profile = null;
       let idealCal = 2000;
       let html5QrCode = null;
+
+      function checkDailyReset() {
+        // 1. Get the profile to make sure we don't break the setup flow
+        const profile = JSON.parse(localStorage.getItem("runnerProfile"));
+        if (!profile) return; // Exit if user hasn't finished setup!
+
+        const today = new Date().toDateString();
+        const lastSavedDate = localStorage.getItem("lastSavedDate");
+
+        // 2. Check if a new day has passed
+        if (lastSavedDate && lastSavedDate !== today) {
+          console.log("New day detected! Resetting logs...");
+
+          totalWaterDrank = 0;
+          totalCaloriesEaten = 0;
+
+          localStorage.setItem("totalWaterDrank", 0);
+          localStorage.setItem("totalCaloriesEaten", 0);
+
+          // Sync UI
+          if (typeof updateWaterUI === "function") updateWaterUI();
+          if (typeof updateEatUI === "function") updateEatUI();
+        }
+
+        // 3. Always update the date so the next check works
+        localStorage.setItem("lastSavedDate", today);
+      }
 
       // 1. Initial Load Logic
       window.onload = function () {
@@ -1342,19 +1360,81 @@
       // Open/Close Modal
       function toggleEatModal() {
         const modal = document.getElementById("eatModal");
+
         if (modal.classList.contains("hidden")) {
+          // OPENING MODAL
           modal.classList.remove("hidden");
           modal.classList.add("flex");
         } else {
+          // CLOSING MODAL
           modal.classList.add("hidden");
           modal.classList.remove("flex");
-          // Stop camera if user closes modal while scanning
-          // We'll add the scanner-stop logic later!
+
+          // 1. Kill the camera immediately
+          if (typeof stopScanner === "function") stopScanner();
+
+          // 2. Hide the KitKat/Result card
+          const scanCard = document.getElementById("scan-result-card");
+          if (scanCard) scanCard.classList.add("hidden");
+
+          // 3. Bring back the original buttons (Scanner + Manual Input)
+          const scanBtn = document.getElementById("scanBtn");
+          const manualDiv =
+            document.getElementById("manualCalInput")?.parentElement;
+
+          if (scanBtn) scanBtn.classList.remove("hidden");
+          if (manualDiv) manualDiv.classList.remove("hidden");
+
+          // 4. Clear any text leftover in the grams input
+          const gramsInput = document.getElementById("res-grams");
+          if (gramsInput) gramsInput.value = "";
         }
       }
 
       function startScanner() {
-        alert("Scanner coming soon! We need to link the library first. 📸");
+        const readerDiv = document.getElementById("barcode-reader");
+        readerDiv.classList.remove("hidden");
+
+        // Specify the formats we want to scan (Barcodes + QR)
+        html5QrCode = new Html5Qrcode("barcode-reader", {
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.QR_CODE,
+          ],
+        });
+
+        const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+          stopScanner();
+          fetchFoodData(decodedText);
+        };
+
+        const config = {
+          fps: 20,
+          // We make the box wider to fit long barcodes
+          qrbox: { width: 300, height: 150 },
+          aspectRatio: 1.0,
+        };
+
+        html5QrCode
+          .start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
+          .catch((err) => console.error("Camera Error:", err));
+      }
+
+      // Create a helper function to kill the camera
+      function stopScanner() {
+        if (html5QrCode) {
+          html5QrCode
+            .stop()
+            .then(() => {
+              document.getElementById("barcode-reader").classList.add("hidden");
+              html5QrCode = null;
+            })
+            .catch((err) => console.log("Stop error", err));
+        }
       }
 
       // Handle Manual Calories
@@ -1366,25 +1446,18 @@
           totalCaloriesEaten += amount;
           localStorage.setItem("totalCaloriesEaten", totalCaloriesEaten);
 
-          updateEatUI(); // Refresh the green bars/circles
-
-          input.value = "";
-
-          // SYNC TO PREDICTOR (Calories)
+          // Sync to Predictor
           const calPredictorInput = document.getElementById("caloriesInput");
           if (calPredictorInput) {
-            // 1. Set the input value to the new total
             calPredictorInput.value = Math.round(totalCaloriesEaten);
-
-            // 2. Re-run the predictor math automatically so the chart/time updates
             if (typeof runPredictor === "function") runPredictor();
           }
 
-          // Update the Green Bars/Rings
           updateEatUI();
-
-          toggleEatModal(); // Close modal
+          input.value = "";
         }
+
+        toggleEatModal(); // This runs no matter what!
       }
 
       function updateEatUI() {
@@ -1398,16 +1471,85 @@
           textLabel.innerText = `${Math.round(totalCaloriesEaten)} / ${Math.round(idealCal)} kcal`;
         }
 
-        // 3. Update the bar width
+        // 3. Update the bar width & Ring
         const progressBar = document.getElementById("eatProgressBar");
+        let percentage = Math.min((totalCaloriesEaten / idealCal) * 100, 100);
+
         if (progressBar) {
-          let percentage = Math.min((totalCaloriesEaten / idealCal) * 100, 100);
           progressBar.style.width = percentage + "%";
 
           const borderDesktop = document.getElementById("eatBorderDesktop");
           if (borderDesktop) {
-            borderDesktop.style.background = `conic-gradient(#22c55e 0% ${percentage}%, #3b82f6 ${percentage}%, #a855f7 70%, #ec4899 100%)`;
+            borderDesktop.style.background = `conic-gradient(#22c55e 0% ${percentage}%, #3b82f6 ${percentage}%, #a855f7 100%)`;
           }
+        }
+
+        // 4. SYNC WITH PREDICTOR PAGE
+        const predictorInput = document.getElementById("caloriesInput");
+        // Only update the input if the user is NOT currently typing in it
+        if (predictorInput && document.activeElement !== predictorInput) {
+          predictorInput.value = Math.round(totalCaloriesEaten);
+        }
+      }
+
+      let tempKcalPer100 = 0; // Temp storage
+      let tempProductName = "";
+
+      async function fetchFoodData(barcode) {
+        try {
+          const response = await fetch(
+            `https://world.openfoodfacts.org/api/v2/product/${barcode}.json`,
+          );
+          const data = await response.json();
+
+          if (data.status === 1) {
+            const product = data.product;
+            tempKcalPer100 =
+              product.nutriments["energy-kcal_100g"] ||
+              product.nutriments["energy-kj_100g"] / 4.184 ||
+              0;
+            tempProductName = product.product_name || "Unknown Product";
+
+            if (tempKcalPer100 > 0) {
+              // 1. Hide the scanner reader
+              document.getElementById("barcode-reader").classList.add("hidden");
+
+              // 2. Show and fill the Result Card
+              const card = document.getElementById("scan-result-card");
+              document.getElementById("res-name").innerText = tempProductName;
+              document.getElementById("res-info").innerText =
+                `${Math.round(tempKcalPer100)} kcal / 100g`;
+              card.classList.remove("hidden");
+            }
+          } else {
+            alert("Product not found.");
+          }
+        } catch (error) {
+          alert("Scanner connection error.");
+        }
+      }
+
+      function confirmScanAdd() {
+        const gramsInput = document.getElementById("res-grams");
+        const grams = parseFloat(gramsInput.value) || 0;
+
+        if (grams > 0) {
+          const finalKcal = Math.round((tempKcalPer100 / 100) * grams);
+
+          totalCaloriesEaten += finalKcal;
+          localStorage.setItem("totalCaloriesEaten", totalCaloriesEaten);
+
+          updateEatUI();
+
+          // Reset UI
+          document.getElementById("scan-result-card").classList.add("hidden");
+          gramsInput.value = "";
+          alert(`Added ${finalKcal} kcal!`);
+
+          // Optional: Close modal or restart scanner
+          // closeEatModal();
+        } else {
+          alert("Please enter grams!");
         }
       }
     </script>
@@ -1769,6 +1911,35 @@
             >
               <i class="fas fa-barcode"></i> Open Scanner
             </button>
+          </div>
+
+          <!-- Weight -->
+          <div
+            id="scan-result-card"
+            class="hidden mt-4 mb-6 p-4 bg-slate-800/50 rounded-2xl p-4 border border-slate-800 text-center"
+          >
+            <h4 id="res-name" class="text-white font-bold text-lg">
+              Product Name
+            </h4>
+            <p id="res-info" class="text-gray-400 text-sm mb-3">
+              510 kcal / 100g
+            </p>
+
+            <div class="flex flex-col gap-2">
+              <input
+                type="number"
+                id="res-grams"
+                placeholder="Grams eaten (e.g. 50)"
+                class="w-full p-2 rounded bg-gray-900 text-white border border-gray-700 focus:outline-none focus:border-blue-500"
+              />
+
+              <button
+                onclick="confirmScanAdd()"
+                class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded transition"
+              >
+                Add Calories
+              </button>
+            </div>
           </div>
 
           <!-- Bottom Actions -->
