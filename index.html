@@ -1578,6 +1578,9 @@
           if (calPredictorInput) {
             calPredictorInput.value = Math.round(totalCaloriesEaten);
             if (typeof runPredictor === "function") runPredictor();
+            if (typeof saveTrackerData === "function") {
+              saveTrackerData();
+            }
           }
 
           updateEatUI();
@@ -1694,6 +1697,10 @@
 
           totalCaloriesEaten += finalKcal;
           localStorage.setItem("totalCaloriesEaten", totalCaloriesEaten);
+
+          if (typeof saveTrackerData === "function") {
+            saveTrackerData();
+          }
 
           updateEatUI();
 
