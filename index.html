@@ -51,6 +51,22 @@
             </select>
           </div>
 
+          <div class="relative">
+            <label class="block text-slate-400 text-sm mb-1">City</label>
+            <input
+              id="userCity"
+              type="text"
+              placeholder="Enter your city"
+              autocomplete="off"
+              class="w-full bg-slate-700 text-white p-3 rounded-xl border-none outline-none"
+            />
+
+            <div
+              id="citySuggestions"
+              class="hidden absolute left-0 right-0 mt-2 bg-slate-800 border border-slate-700 rounded-xl overflow-hidden z-50"
+            ></div>
+          </div>
+
           <div class="grid grid-cols-3 gap-3">
             <div>
               <label class="block text-slate-400 text-sm mb-1">Age</label>
@@ -725,6 +741,100 @@
       let myChart = null;
       let idealCal = 2000;
       let html5QrCode;
+      let selectedLocation = null;
+      let citySearchTimer = null;
+
+      const userCityInput = document.getElementById("userCity");
+
+      const citySuggestions = document.getElementById("citySuggestions");
+
+      // Paste the Open-Meteo geocoding endpoint here
+      const GEOCODING_ENDPOINT =
+        "https://geocoding-api.open-meteo.com/v1/search";
+
+      if (userCityInput) {
+        userCityInput.addEventListener("input", () => {
+          clearTimeout(citySearchTimer);
+
+          selectedLocation = null;
+
+          const query = userCityInput.value.trim();
+
+          if (query.length < 2) {
+            citySuggestions.innerHTML = "";
+            citySuggestions.classList.add("hidden");
+            return;
+          }
+
+          citySearchTimer = setTimeout(() => {
+            searchCities(query);
+          }, 350);
+        });
+      }
+
+      async function searchCities(query) {
+        try {
+          const searchUrl =
+            `${GEOCODING_ENDPOINT}` +
+            `?name=${encodeURIComponent(query)}` +
+            `&count=5&language=en&format=json`;
+
+          const response = await fetch(searchUrl);
+
+          if (!response.ok) {
+            throw new Error("City search failed.");
+          }
+
+          const data = await response.json();
+
+          showCitySuggestions(data.results || []);
+        } catch (error) {
+          console.error("Geocoding error:", error);
+
+          citySuggestions.innerHTML = "";
+          citySuggestions.classList.add("hidden");
+        }
+      }
+
+      function showCitySuggestions(results) {
+        citySuggestions.innerHTML = "";
+
+        if (results.length === 0) {
+          citySuggestions.classList.add("hidden");
+          return;
+        }
+
+        results.forEach((location) => {
+          const button = document.createElement("button");
+
+          button.type = "button";
+          button.className =
+            "block w-full text-left p-3 " + "text-white hover:bg-slate-700";
+
+          const region = location.admin1 ? `, ${location.admin1}` : "";
+
+          button.textContent =
+            `${location.name}${region}, ` + `${location.country}`;
+
+          button.addEventListener("click", () => {
+            userCityInput.value = location.name;
+
+            selectedLocation = {
+              city: location.name,
+              country: location.country,
+              latitude: location.latitude,
+              longitude: location.longitude,
+            };
+
+            citySuggestions.innerHTML = "";
+            citySuggestions.classList.add("hidden");
+          });
+
+          citySuggestions.appendChild(button);
+        });
+
+        citySuggestions.classList.remove("hidden");
+      }
 
       function getValidInputValue(input, min, max, label) {
         const rawValue = input.value.trim();
@@ -795,9 +905,24 @@
 
       // 2. Profile Management
       function saveProfile() {
+        const cityInput = document.getElementById("userCity");
+
+        const city = cityInput.value.trim();
+
+        if (city === "") {
+          alert("Please enter your city.");
+          cityInput.focus();
+          return;
+        }
         profile = {
           gender: document.getElementById("gender").value,
           sweatRate: document.getElementById("sweatRate").value,
+          city: city,
+          country: selectedLocation ? selectedLocation.country : "",
+
+          latitude: selectedLocation ? selectedLocation.latitude : null,
+
+          longitude: selectedLocation ? selectedLocation.longitude : null,
           age: parseFloat(document.getElementById("age").value),
           weight: parseFloat(document.getElementById("weight").value),
           height: parseFloat(document.getElementById("height").value),
@@ -1671,6 +1796,7 @@
         }
 
         toggleEatModal(); // This runs no matter what!
+        checkCalorieLimit();
       }
 
       function updateEatUI() {
@@ -1794,6 +1920,7 @@
           if (typeof saveTrackerData === "function") {
             saveTrackerData();
           }
+          checkCalorieLimit();
 
           // 1. Alert the user
           alert(`Added ${finalKcal} kcal!`);
@@ -1920,6 +2047,28 @@
 
       // Checks whether midnight has passed while the app is open
       setInterval(checkTrackerDate, 30000);
+
+      // End of your script
+
+      let calorieWarningShown = false;
+
+      function checkCalorieLimit() {
+        const dailyGoal = Number(localStorage.getItem("userIdealCal")) || 0;
+
+        if (
+          dailyGoal > 0 &&
+          totalCaloriesEaten > dailyGoal &&
+          !calorieWarningShown
+        ) {
+          alert("Che ciccione che sei.");
+
+          calorieWarningShown = true;
+        }
+
+        if (totalCaloriesEaten <= dailyGoal) {
+          calorieWarningShown = false;
+        }
+      }
     </script>
     <!-- 1. Floating Action Button -->
 
@@ -1933,7 +2082,7 @@
       >
         <!-- Inner Layer: Matches the page background color -->
         <div
-          class="bg-slate-800 w-14 h-14 flex items-center justify-center rounded-[15px]"
+          class="bg-slate-900 w-14 h-14 flex items-center justify-center rounded-[15px] hover:bg-slate-800"
         >
           <!-- The Runner Icon -->
           <svg
@@ -1971,7 +2120,7 @@
       >
         <!-- Inner box matches the runner exactly -->
         <div
-          class="bg-slate-800 w-14 h-14 flex items-center justify-center rounded-[15px]"
+          class="bg-slate-900 w-14 h-14 flex items-center justify-center rounded-[15px] hover:bg-slate-800"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -2000,7 +2149,7 @@
 
     <button
       onclick="toggleEatModal()"
-      class="hidden md:flex fixed top-[170px] right-6 z-50 transition-all active:scale-95 outline-none"
+      class="hidden md:flex fixed top-[168px] right-6 z-50 transition-all active:scale-95 outline-none"
     >
       <!-- This div ID now controls the WHOLE border color -->
       <div
@@ -2009,7 +2158,7 @@
       >
         <!-- Inner box matches the Meat exactly -->
         <div
-          class="bg-slate-800 w-14 h-14 flex items-center justify-center rounded-[15px]"
+          class="bg-slate-900 w-14 h-14 flex items-center justify-center rounded-[15px] hover:bg-slate-800"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -2034,6 +2183,42 @@
             <path
               d="M12.975 21.425c3.905 -3.906 4.855 -9.288 2.121 -12.021c-2.733 -2.734 -8.115 -1.784 -12.02 2.121"
             />
+          </svg>
+        </div>
+      </div>
+    </button>
+
+    <!-- Prepare card -->
+    <button
+      onclick="openPrepareModal()"
+      class="hidden md:flex fixed top-[240px] right-6 z-50 transition-all active:scale-95 outline-none"
+    >
+      <!-- This div ID now controls the WHOLE border color -->
+      <div
+        class="p-[1.5px] rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 shrink-0 transition-all duration-700"
+      >
+        <!-- Inner box matches the Meat exactly -->
+        <div
+          class="bg-slate-900 w-14 h-14 flex items-center justify-center rounded-[15px] hover:bg-slate-800"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="icon icon-tabler icons-tabler-outline icon-tabler-target-arrow"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+            <path d="M12 7a5 5 0 1 0 5 5" />
+            <path d="M13 3.055a9 9 0 1 0 7.941 7.945" />
+            <path d="M15 6v3h3l3 -3h-3v-3l-3 3" />
+            <path d="M15 9l-3 3" />
           </svg>
         </div>
       </div>
