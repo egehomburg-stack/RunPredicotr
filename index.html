@@ -137,7 +137,9 @@
                 <input
                   type="number"
                   id="sleepHours"
-                  value="8"
+                  data-save="sleepHours"
+                  data-daily
+                  value="0"
                   min="0"
                   max="12"
                   class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg text-center"
@@ -147,6 +149,8 @@
                 <input
                   type="number"
                   id="sleepMins"
+                  data-save="sleepMins"
+                  data-daily
                   value="0"
                   min="0"
                   max="59"
@@ -170,6 +174,7 @@
               <input
                 type="number"
                 id="temperature"
+                data-save="temperature"
                 value="20"
                 step="1"
                 class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
@@ -190,6 +195,8 @@
               <input
                 type="number"
                 id="caloriesInput"
+                data-save="caloriesInput"
+                data-daily
                 value="0"
                 step="1"
                 class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
@@ -210,6 +217,8 @@
               <input
                 type="number"
                 id="hydrationInput"
+                data-save="hydrationInput"
+                data-daily
                 step="0.1"
                 value="0"
                 class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
@@ -230,6 +239,7 @@
               <input
                 type="number"
                 id="altitudeInput"
+                data-save="altitudeInput"
                 value="500"
                 class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
                 oninput="runPredictor()"
@@ -244,7 +254,7 @@
               <input
                 type="number"
                 id="distance"
-                value="5"
+                value="0"
                 step="0.5"
                 class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
                 oninput="runPredictor()"
@@ -641,7 +651,6 @@
               class="w-2 h-2 bg-blue-400 rounded-full shadow-[0_0_10px_#60a5fa]"
             ></div>
           </div>
-          <span class="text-xs uppercase tracking-[0.15em]">Predictor</span>
         </button>
 
         <!-- Vertical Divider -->
@@ -712,7 +721,7 @@
     </div>
 
     <script>
-      let profile = null; // Declare it here so everyone can see it
+      let profile = null;
       let myChart = null;
       let idealCal = 2000;
       let html5QrCode;
@@ -1708,6 +1717,111 @@
           modal.classList.remove("flex");
         }
       }
+
+      const TRACKER_STORAGE_KEY = "fuelLogTrackerData";
+
+      let trackerSavedElements = [];
+      let trackerSavedDate = trackerTodayKey();
+
+      function trackerTodayKey() {
+        const date = new Date();
+
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+          2,
+          "0",
+        )}-${String(date.getDate()).padStart(2, "0")}`;
+      }
+
+      function trackerGetValue(element) {
+        return "value" in element ? element.value : element.textContent.trim();
+      }
+
+      function trackerSetValue(element, value) {
+        if ("value" in element) {
+          element.value = value;
+        } else {
+          element.textContent = value;
+        }
+      }
+
+      function saveTrackerData() {
+        const data = {
+          date: trackerTodayKey(),
+        };
+
+        trackerSavedElements.forEach((element) => {
+          const key = element.dataset.save;
+          data[key] = trackerGetValue(element);
+        });
+
+        localStorage.setItem(TRACKER_STORAGE_KEY, JSON.stringify(data));
+      }
+
+      function resetTrackerDailyFields() {
+        trackerSavedElements.forEach((element) => {
+          if (element.hasAttribute("data-daily")) {
+            trackerSetValue(element, "0");
+          }
+        });
+
+        trackerSavedDate = trackerTodayKey();
+        saveTrackerData();
+      }
+
+      function loadTrackerData() {
+        trackerSavedElements = [...document.querySelectorAll("[data-save]")];
+
+        let savedData = {};
+
+        try {
+          savedData =
+            JSON.parse(localStorage.getItem(TRACKER_STORAGE_KEY)) || {};
+        } catch (error) {
+          console.warn("Could not load saved tracker data:", error);
+        }
+
+        const today = trackerTodayKey();
+
+        if (savedData.date && savedData.date !== today) {
+          // New day: reset only fields marked data-daily
+          trackerSavedElements.forEach((element) => {
+            if (element.hasAttribute("data-daily")) {
+              trackerSetValue(element, "0");
+            }
+          });
+        } else {
+          // Same day: restore saved values
+          trackerSavedElements.forEach((element) => {
+            const key = element.dataset.save;
+
+            if (savedData[key] !== undefined) {
+              trackerSetValue(element, savedData[key]);
+            }
+          });
+        }
+
+        trackerSavedDate = today;
+
+        trackerSavedElements.forEach((element) => {
+          element.addEventListener("input", saveTrackerData);
+          element.addEventListener("change", saveTrackerData);
+        });
+
+        saveTrackerData();
+      }
+
+      function checkTrackerDate() {
+        const today = trackerTodayKey();
+
+        if (today !== trackerSavedDate) {
+          resetTrackerDailyFields();
+        }
+      }
+
+      loadTrackerData();
+
+      // Checks whether midnight has passed while the app is open
+      setInterval(checkTrackerDate, 30000);
     </script>
     <!-- 1. Floating Action Button -->
 
