@@ -726,6 +726,34 @@
       let idealCal = 2000;
       let html5QrCode;
 
+      function getValidInputValue(input, min, max, label) {
+        const rawValue = input.value.trim();
+
+        const validNumberFormat = /^(?:\d+|\d*\.\d+)$/;
+
+        // Allow the field to be temporarily empty while editing
+        if (rawValue === "") {
+          return null;
+        }
+
+        // Reject invalid text or formats
+        if (!validNumberFormat.test(rawValue)) {
+          alert(`${label} must be a normal number.`);
+          input.focus();
+          return null;
+        }
+
+        const value = Number(rawValue);
+
+        if (!Number.isFinite(value) || value < min || value > max) {
+          alert(`${label} must be between ${min} and ${max}.`);
+          input.focus();
+          return null;
+        }
+
+        return value;
+      }
+
       function checkDailyReset() {
         // 1. Get the profile to make sure we don't break the setup flow
         const profile = JSON.parse(localStorage.getItem("runnerProfile"));
@@ -827,20 +855,74 @@
       function runPredictor() {
         if (!profile) return;
 
-        const h = parseFloat(document.getElementById("sleepHours").value) || 0;
-        const m = parseFloat(document.getElementById("sleepMins").value) || 0;
+        const h = getValidInputValue(
+          document.getElementById("sleepHours"),
+          0,
+          12,
+          "Sleep hours",
+        );
+        if (h === null) {
+          return;
+        }
+        const m = getValidInputValue(
+          document.getElementById("sleepMins"),
+          0,
+          59,
+          "Sleep minutes",
+        );
+
+        if (m === null) {
+          return;
+        }
         const sleep = h + m / 60;
 
-        const dist = parseFloat(document.getElementById("distance").value) || 0;
-        const cal =
-          parseFloat(document.getElementById("caloriesInput").value) || 0;
-        const temp =
-          parseFloat(document.getElementById("temperature").value) || 0;
+        const dist = getValidInputValue(
+          document.getElementById("distance"),
+          0,
+          100,
+          "Distance",
+        );
+
+        if (dist === null) {
+          return;
+        }
+        const cal = getValidInputValue(
+          document.getElementById("caloriesInput"),
+          0,
+          20000,
+          "Calories",
+        );
+        if (dist === null) {
+          return;
+        }
+        const temp = getValidInputValue(
+          document.getElementById("temperature"),
+          -30,
+          45,
+          "Temperature",
+        );
+        if (dist === null) {
+          return;
+        }
         const stretched = document.getElementById("stretching").checked;
-        const water =
-          parseFloat(document.getElementById("hydrationInput").value) || 0;
-        const alt =
-          parseFloat(document.getElementById("altitudeInput").value) || 0;
+        const water = getValidInputValue(
+          document.getElementById("hydrationInput"),
+          0,
+          10,
+          "Water",
+        );
+        if (dist === null) {
+          return;
+        }
+        const alt = getValidInputValue(
+          document.getElementById("altitudeInput"),
+          0,
+          9000,
+          "Altitude",
+        );
+        if (dist === null) {
+          return;
+        }
 
         totalWaterDrank = Math.round(water * 1000); // Sync liters to global ml
         localStorage.setItem("totalWaterDrank", totalWaterDrank); // Save it!
@@ -1327,7 +1409,8 @@
 
       var totalWaterDrank = 0;
       var bottles = 0;
-      var totalCaloriesEaten = 0;
+      var totalCaloriesEaten =
+        Number(localStorage.getItem("totalCaloriesEaten")) || 0;
 
       function toggleWaterModal() {
         const modal = document.getElementById("waterModal");
@@ -1698,11 +1781,19 @@
           totalCaloriesEaten += finalKcal;
           localStorage.setItem("totalCaloriesEaten", totalCaloriesEaten);
 
+          updateEatUI();
+
+          // Make sure the saved input contains the new total
+          const caloriesInput = document.getElementById("caloriesInput");
+
+          if (caloriesInput) {
+            caloriesInput.value = Math.round(totalCaloriesEaten);
+          }
+
+          // Save only after the UI has been updated
           if (typeof saveTrackerData === "function") {
             saveTrackerData();
           }
-
-          updateEatUI();
 
           // 1. Alert the user
           alert(`Added ${finalKcal} kcal!`);
