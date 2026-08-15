@@ -113,7 +113,7 @@
     <div id="mainAppContent" class="hidden">
       <div
         id="graphsPage"
-        class="page-content hidden min-h-screen flex items-center justify-center"
+        class="app-ui-element page-content hidden min-h-screen flex items-center justify-center"
       >
         <h1
           class="text-white text-4xl font-bold tracking-widest uppercase opacity-20"
@@ -752,6 +752,76 @@
       const GEOCODING_ENDPOINT =
         "https://geocoding-api.open-meteo.com/v1/search";
 
+      const WEATHER_ENDPOINT = "https://api.open-meteo.com/v1/forecast";
+
+      let weatherRefreshTimer = null;
+
+      async function loadWeather(location) {
+        if (
+          !location ||
+          location.latitude == null ||
+          location.longitude == null
+        ) {
+          return;
+        }
+
+        const params = new URLSearchParams({
+          latitude: location.latitude,
+          longitude: location.longitude,
+          current: "temperature_2m",
+          hourly: "temperature_2m",
+          forecast_days: "1",
+          timezone: "auto",
+        });
+
+        try {
+          const response = await fetch(
+            `${WEATHER_ENDPOINT}?${params.toString()}`,
+          );
+
+          if (!response.ok) {
+            throw new Error("Weather request failed.");
+          }
+
+          const weatherData = await response.json();
+
+          const temperature = weatherData.current.temperature_2m;
+
+          const unit = weatherData.current_units.temperature_2m;
+
+          const temperatureInput = document.getElementById("temperature");
+
+          if (temperatureInput) {
+            temperatureInput.value = Math.round(temperature);
+
+            temperatureInput.dispatchEvent(
+              new Event("input", {
+                bubbles: true,
+              }),
+            );
+          }
+
+          console.log("Hourly forecast:", weatherData.hourly);
+        } catch (error) {
+          console.error("Weather error:", error);
+        }
+      }
+
+      function startWeatherUpdates(location) {
+        clearInterval(weatherRefreshTimer);
+
+        // Fetch immediately
+        loadWeather(location);
+
+        // Fetch again every hour
+        weatherRefreshTimer = setInterval(
+          () => {
+            loadWeather(location);
+          },
+          60 * 60 * 1000,
+        );
+      }
+
       if (userCityInput) {
         userCityInput.addEventListener("input", () => {
           clearTimeout(citySearchTimer);
@@ -825,6 +895,8 @@
               latitude: location.latitude,
               longitude: location.longitude,
             };
+
+            startWeatherUpdates(selectedLocation);
 
             citySuggestions.innerHTML = "";
             citySuggestions.classList.add("hidden");
@@ -1098,6 +1170,9 @@
 
         // Ideal hydration amount by the current time
         const idealWater = dailyWaterTarget * dayProgress;
+
+        window.idealWater = idealWater;
+        localStorage.setItem("idealWater", idealWater);
 
         // Update the label
         document.getElementById("idealWaterHint").innerText =
@@ -2069,12 +2144,46 @@
           calorieWarningShown = false;
         }
       }
+
+      function toggleGraphs() {
+        const graphsSection = document.getElementById("graphsSection");
+
+        const graphsButton = document.getElementById("graphsButton");
+
+        const graphOptions = document.querySelectorAll(".graph-option");
+
+        if (!graphsSection) {
+          return;
+        }
+
+        const opening = graphsSection.classList.contains("hidden");
+
+        graphsSection.classList.toggle("hidden");
+
+        if (graphsButton) {
+          graphsButton.setAttribute("aria-expanded", String(opening));
+        }
+
+        if (opening) {
+          graphOptions.forEach((option, index) => {
+            option.classList.add("opacity-0", "-translate-y-3");
+
+            setTimeout(() => {
+              option.classList.remove("opacity-0", "-translate-y-3");
+            }, index * 100);
+          });
+        } else {
+          graphOptions.forEach((option) => {
+            option.classList.add("opacity-0", "-translate-y-3");
+          });
+        }
+      }
     </script>
     <!-- 1. Floating Action Button -->
 
     <button
       onclick="toggleModal()"
-      class="hidden md:flex fixed top-6 right-6 z-50 transition-all active:scale-95 outline-none"
+      class="app-ui-element hidden md:flex fixed top-6 right-6 z-50 transition-all active:scale-95 outline-none"
     >
       <!-- 1. Gradient Outer Layer (The Border) -->
       <div
@@ -2111,7 +2220,7 @@
     <!-- Desktop Water Button -->
     <button
       onclick="toggleWaterModal()"
-      class="hidden md:flex fixed top-24 right-6 z-50 transition-all active:scale-95 outline-none"
+      class="app-ui-element hidden md:flex fixed top-24 right-6 z-50 transition-all active:scale-95 outline-none"
     >
       <!-- This div ID now controls the WHOLE border color -->
       <div
@@ -2149,7 +2258,7 @@
 
     <button
       onclick="toggleEatModal()"
-      class="hidden md:flex fixed top-[168px] right-6 z-50 transition-all active:scale-95 outline-none"
+      class="app-ui-element hidden md:flex fixed top-[168px] right-6 z-50 transition-all active:scale-95 outline-none"
     >
       <!-- This div ID now controls the WHOLE border color -->
       <div
@@ -2191,7 +2300,7 @@
     <!-- Prepare card -->
     <button
       onclick="openPrepareModal()"
-      class="hidden md:flex fixed top-[240px] right-6 z-50 transition-all active:scale-95 outline-none"
+      class="app-ui-element hidden md:flex fixed top-[240px] right-6 z-50 transition-all active:scale-95 outline-none"
     >
       <!-- This div ID now controls the WHOLE border color -->
       <div
@@ -2223,6 +2332,97 @@
         </div>
       </div>
     </button>
+
+    <button
+      id="graphsButton"
+      type="button"
+      onclick="toggleGraphs()"
+      class="hidden md:flex fixed left-6 top-6 z-50 flex h-12 w-56 items-center justify-center gap-3 rounded-2xl border border-indigo-400 bg-slate-900/90 text-xl font-semibold text-white shadow-lg backdrop-blur hover:bg-slate-800"
+    >
+      <span>Graphs</span>
+
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="h-6 w-6"
+      >
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M3 3v18h18" />
+        <path d="M20 18v3" />
+        <path d="M16 16v5" />
+        <path d="M12 13v8" />
+        <path d="M8 16v5" />
+        <path d="M3 11c6 0 5 -5 9 -5s3 5 9 5" />
+      </svg>
+    </button>
+
+    <div
+      id="graphsSection"
+      class="app-ui-element hidden fixed left-6 top-[90px] z-40 w-56 max-h-[80vh] overflow-y-auto p-0"
+    >
+      <div class="grid grid-cols-1 gap-3">
+        <button
+          type="button"
+          class="graph-option w-full rounded-xl border border-indigo-400 bg-slate-800 px-4 py-3 text-left font-semibold text-white transition hover:bg-slate-700"
+          data-category="distance"
+          onclick="openGraphMode('runDistance')"
+        >
+          Run Distance
+        </button>
+
+        <button
+          type="button"
+          class="graph-option w-full rounded-xl border border-indigo-400 bg-slate-800 px-4 py-3 text-left font-semibold text-white transition hover:bg-slate-700"
+          data-category="hydration"
+          onclick="openGraphMode('hydration')"
+        >
+          Hydration
+        </button>
+
+        <button
+          type="button"
+          class="graph-option w-full rounded-xl border border-indigo-400 bg-slate-800 px-4 py-3 text-left font-semibold text-white transition hover:bg-slate-700"
+          data-category="calories"
+          onclick="openGraphMode('calories')"
+        >
+          Calories
+        </button>
+
+        <button
+          type="button"
+          class="graph-option w-full rounded-xl border border-indigo-400 bg-slate-800 px-4 py-3 text-left font-semibold text-white transition hover:bg-slate-700"
+          data-category="quality"
+          onclick="openGraphMode('quality')"
+        >
+          Run Quality
+        </button>
+
+        <button
+          type="button"
+          class="graph-option w-full rounded-xl border border-indigo-400 bg-slate-800 px-4 py-3 text-left font-semibold text-white transition hover:bg-slate-700"
+          data-category="heartRate"
+          onclick="openGraphMode('heartRate')"
+        >
+          Heart Rate
+        </button>
+
+        <button
+          type="button"
+          class="graph-option w-full rounded-xl border border-indigo-400 bg-slate-800 px-4 py-3 text-left font-semibold text-white transition hover:bg-slate-700"
+          data-category="temperature"
+          onclick="openGraphMode('temperature')"
+        >
+          Temperature
+        </button>
+      </div>
+    </div>
 
     <!-- 2. Modal Overlay -->
     <div
@@ -2542,5 +2742,439 @@
         </button>
       </div>
     </div>
+
+    <div
+      id="graphModal"
+      style="display: none"
+      class="hidden fixed inset-0 z-[60] bg-[#0a253e]/95 p-6"
+    >
+      <div
+        class="mx-auto mt-10 max-w-5xl rounded-3xl border border-indigo-400 bg-slate-900 p-6 shadow-2xl"
+      >
+        <!-- Run Distance -->
+        <div id="runDistancePanel" class="graph-panel hidden">
+          <h2 class="mb-6 text-3xl font-bold text-white">Run Distance</h2>
+
+          <p class="mb-8 text-slate-300">Run Distance graph coming soon.</p>
+
+          <button
+            type="button"
+            class="exit-graph rounded-xl border border-indigo-400 px-6 py-3 font-semibold text-white hover:bg-slate-800"
+            onclick="closeGraphMode()"
+          >
+            Exit
+          </button>
+        </div>
+
+        <!-- Hydration -->
+        <div id="hydrationPanel" class="graph-panel hidden">
+          <h2 class="mb-6 text-3xl font-bold text-white">Hydration</h2>
+
+          <div class="relative h-96 w-full">
+            <canvas id="hydrationChart"></canvas>
+          </div>
+
+          <button
+            type="button"
+            class="exit-graph mt-6 rounded-xl border border-indigo-400 px-6 py-3 font-semibold text-white hover:bg-slate-800"
+            onclick="closeGraphMode()"
+          >
+            Exit
+          </button>
+        </div>
+
+        <!-- Calories -->
+        <div id="caloriesPanel" class="graph-panel hidden">
+          <h2 class="mb-6 text-3xl font-bold text-white">Calories</h2>
+
+          <p class="mb-8 text-slate-300">Calories graph coming soon.</p>
+
+          <button
+            type="button"
+            class="exit-graph rounded-xl border border-indigo-400 px-6 py-3 font-semibold text-white hover:bg-slate-800"
+            onclick="closeGraphMode()"
+          >
+            Exit
+          </button>
+        </div>
+
+        <!-- Run Quality -->
+        <div id="qualityPanel" class="graph-panel hidden">
+          <h2 class="mb-6 text-3xl font-bold text-white">Run Quality</h2>
+
+          <p class="mb-8 text-slate-300">Run Quality graph coming soon.</p>
+
+          <button
+            type="button"
+            class="exit-graph rounded-xl border border-indigo-400 px-6 py-3 font-semibold text-white hover:bg-slate-800"
+            onclick="closeGraphMode()"
+          >
+            Exit
+          </button>
+        </div>
+
+        <!-- Heart Rate -->
+        <div id="heartRatePanel" class="graph-panel hidden">
+          <h2 class="mb-6 text-3xl font-bold text-white">Heart Rate</h2>
+
+          <p class="mb-8 text-slate-300">Heart Rate graph coming soon.</p>
+
+          <button
+            type="button"
+            class="exit-graph rounded-xl border border-indigo-400 px-6 py-3 font-semibold text-white hover:bg-slate-800"
+            onclick="closeGraphMode()"
+          >
+            Exit
+          </button>
+        </div>
+
+        <!-- Temperature -->
+        <div id="temperaturePanel" class="graph-panel hidden">
+          <h2 class="mb-6 text-3xl font-bold text-white">Temperature</h2>
+
+          <p class="mb-8 text-slate-300">Temperature graph coming soon.</p>
+
+          <button
+            type="button"
+            class="exit-graph rounded-xl border border-indigo-400 px-6 py-3 font-semibold text-white hover:bg-slate-800"
+            onclick="closeGraphMode()"
+          >
+            Exit
+          </button>
+        </div>
+
+        <!-- Sleep -->
+        <div id="sleepPanel" class="graph-panel hidden">
+          <h2 class="mb-6 text-3xl font-bold text-white">Sleep</h2>
+
+          <p class="mb-8 text-slate-300">Sleep graph coming soon.</p>
+
+          <button
+            type="button"
+            class="exit-graph rounded-xl border border-indigo-400 px-6 py-3 font-semibold text-white hover:bg-slate-800"
+            onclick="closeGraphMode()"
+          >
+            Exit
+          </button>
+        </div>
+
+        <!-- Altitude -->
+        <div id="altitudePanel" class="graph-panel hidden">
+          <h2 class="mb-6 text-3xl font-bold text-white">Altitude</h2>
+
+          <p class="mb-8 text-slate-300">Altitude graph coming soon.</p>
+
+          <button
+            type="button"
+            class="exit-graph rounded-xl border border-indigo-400 px-6 py-3 font-semibold text-white hover:bg-slate-800"
+            onclick="closeGraphMode()"
+          >
+            Exit
+          </button>
+        </div>
+      </div>
+    </div>
+    <script>
+      let hydrationChart = null;
+
+      const hydrationInput = document.getElementById("hydrationInput");
+
+      const graphModal = document.getElementById("graphModal");
+
+      const graphPanels = document.querySelectorAll(".graph-panel");
+
+      const graphOptions = document.querySelectorAll(".graph-option");
+
+      const exitButtons = document.querySelectorAll(".exit-graph");
+
+      const HYDRATION_HISTORY_KEY = "hydrationHistory";
+
+      const HYDRATION_DATE_KEY = "hydrationActiveDate";
+
+      const HYDRATION_LIVE_KEY = "hydrationLiveValue";
+
+      //const DAILY_IDEAL_LITERS = 2;
+
+      function getLocalDateKey() {
+        const today = new Date();
+
+        const year = today.getFullYear();
+
+        const month = String(today.getMonth() + 1).padStart(2, "0");
+
+        const day = String(today.getDate()).padStart(2, "0");
+
+        return `${year}-${month}-${day}`;
+      }
+
+      function getHydrationHistory() {
+        return JSON.parse(localStorage.getItem(HYDRATION_HISTORY_KEY) || "{}");
+      }
+
+      function saveHydrationSnapshot() {
+        if (!hydrationInput) {
+          return;
+        }
+
+        const value = Number(hydrationInput.value) || 0;
+
+        localStorage.setItem(HYDRATION_LIVE_KEY, String(value));
+
+        if (!localStorage.getItem(HYDRATION_DATE_KEY)) {
+          localStorage.setItem(HYDRATION_DATE_KEY, getLocalDateKey());
+        }
+      }
+
+      function savePreviousHydrationDay(previousDate) {
+        const history = getHydrationHistory();
+
+        const previousValue =
+          Number(localStorage.getItem(HYDRATION_LIVE_KEY)) || 0;
+
+        history[previousDate] = previousValue;
+
+        localStorage.setItem(HYDRATION_HISTORY_KEY, JSON.stringify(history));
+
+        localStorage.setItem(HYDRATION_LIVE_KEY, "0");
+      }
+
+      function checkHydrationMidnight() {
+        const today = getLocalDateKey();
+
+        const activeDate = localStorage.getItem(HYDRATION_DATE_KEY);
+
+        if (!activeDate) {
+          localStorage.setItem(HYDRATION_DATE_KEY, today);
+
+          saveHydrationSnapshot();
+          return;
+        }
+
+        if (activeDate !== today) {
+          savePreviousHydrationDay(activeDate);
+
+          localStorage.setItem(HYDRATION_DATE_KEY, today);
+
+          if (hydrationInput) {
+            hydrationInput.value = "0";
+
+            hydrationInput.dispatchEvent(
+              new Event("input", {
+                bubbles: true,
+              }),
+            );
+          }
+        }
+      }
+
+      function renderHydrationChart() {
+        const canvas = document.getElementById("hydrationChart");
+
+        if (!canvas) {
+          return;
+        }
+
+        saveHydrationSnapshot();
+
+        const history = getHydrationHistory();
+
+        const today = getLocalDateKey();
+
+        const currentValue = Number(hydrationInput?.value) || 0;
+
+        history[today] = currentValue;
+
+        const dates = Object.keys(history).sort();
+
+        const actualValues = dates.map((date) => history[date]);
+
+        // Safely check if idealWater exists globally, or read from localStorage, or default to 2.5
+        let currentIdeal = 2.5;
+
+        try {
+          if (typeof idealWater !== "undefined" && !isNaN(Number(idealWater))) {
+            currentIdeal = Number(idealWater);
+          } else if (localStorage.getItem("idealWater")) {
+            currentIdeal = Number(localStorage.getItem("idealWater"));
+          }
+        } catch (e) {
+          currentIdeal = 2.5;
+        }
+
+        const idealValues = dates.map(() => currentIdeal);
+
+        if (hydrationChart) {
+          hydrationChart.destroy();
+        }
+
+        hydrationChart = new Chart(canvas, {
+          type: "line",
+
+          data: {
+            labels: dates,
+
+            datasets: [
+              {
+                label: "Liters Drunk",
+                data: actualValues,
+                borderColor: "#60a5fa",
+                backgroundColor: "rgba(96, 165, 250, 0.2)",
+                borderWidth: 3,
+                pointRadius: 5,
+                tension: 0.3,
+                fill: false,
+              },
+              {
+                label: "Ideal Water",
+                //data: idealValues,
+                borderColor: "#22c55e",
+                borderWidth: 3,
+                borderDash: [8, 6],
+                pointRadius: 0,
+                tension: 0,
+                fill: false,
+              },
+            ],
+          },
+
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            plugins: {
+              legend: {
+                labels: {
+                  color: "#ffffff",
+                },
+              },
+            },
+
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "Date",
+                  color: "#ffffff",
+                },
+
+                ticks: {
+                  color: "#cbd5e1",
+                },
+
+                grid: {
+                  color: "rgba(148, 163, 184, 0.2)",
+                },
+              },
+
+              y: {
+                beginAtZero: true,
+
+                title: {
+                  display: true,
+                  text: "Liters Drunk",
+                  color: "#ffffff",
+                },
+
+                ticks: {
+                  color: "#cbd5e1",
+                },
+
+                grid: {
+                  color: "rgba(148, 163, 184, 0.2)",
+                },
+              },
+            },
+          },
+        });
+      }
+
+      function openGraphMode(category) {
+        const graphModal = document.getElementById("graphModal");
+
+        const appElements = document.querySelectorAll(".app-ui-element");
+
+        appElements.forEach((element) => {
+          element.style.display = "none";
+        });
+
+        graphModal.classList.remove("hidden");
+
+        graphModal.style.display = "block";
+        graphModal.style.position = "fixed";
+        graphModal.style.inset = "0";
+        graphModal.style.zIndex = "99999";
+
+        document.body.classList.add("overflow-hidden");
+
+        document.querySelectorAll(".graph-panel").forEach((panel) => {
+          panel.classList.add("hidden");
+        });
+
+        const selectedPanel = document.getElementById(`${category}Panel`);
+
+        if (!selectedPanel) {
+          return;
+        }
+
+        selectedPanel.classList.remove("hidden");
+
+        if (category === "hydration") {
+          renderHydrationChart();
+        }
+      }
+
+      function closeGraphMode() {
+        const graphModal = document.getElementById("graphModal");
+
+        const appElements = document.querySelectorAll(".app-ui-element");
+
+        graphModal.classList.add("hidden");
+        graphModal.style.display = "none";
+
+        appElements.forEach((element) => {
+          element.style.removeProperty("display");
+        });
+
+        document.body.classList.remove("overflow-hidden");
+      }
+
+      window.openGraphMode = openGraphMode;
+
+      window.closeGraphMode = closeGraphMode;
+
+      function openGraphCategory(category) {
+        graphModal.classList.remove("hidden");
+
+        graphPanels.forEach((panel) => {
+          panel.classList.add("hidden");
+        });
+
+        const selectedPanel = document.getElementById(`${category}Panel`);
+
+        if (!selectedPanel) {
+          return;
+        }
+
+        selectedPanel.classList.remove("hidden");
+
+        if (category === "hydration") {
+          renderHydrationChart();
+        }
+      }
+
+      exitButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          graphModal.classList.add("hidden");
+        });
+      });
+
+      if (hydrationInput) {
+        hydrationInput.addEventListener("input", saveHydrationSnapshot);
+      }
+
+      checkHydrationMidnight();
+
+      setInterval(checkHydrationMidnight, 30 * 1000);
+    </script>
   </body>
 </html>
