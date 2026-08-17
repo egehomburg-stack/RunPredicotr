@@ -110,16 +110,292 @@
       </div>
     </div>
 
+    <!-- Graph Mobile -->
+
     <div id="mainAppContent" class="hidden">
       <div
         id="graphsPage"
         class="app-ui-element page-content hidden min-h-screen flex items-center justify-center"
       >
-        <h1
-          class="text-white text-4xl font-bold tracking-widest uppercase opacity-20"
+        <div
+          class="flex flex-col h-full w-full text-white p-5 pb-24 overflow-y-auto"
         >
-          Hello
-        </h1>
+          <!-- Header -->
+          <h1 class="text-2xl font-bold tracking-tight text-white mb-6">
+            Graphs & Analytics
+          </h1>
+
+          <!-- Vertical Button List -->
+          <div class="flex flex-col gap-3">
+            <!-- Distance / Run Button -->
+            <button
+              onclick="openMobileGraphModal('distance')"
+              class="w-full bg-slate-800 active:scale-[0.98] transition-all rounded-2xl p-4 border border-slate-700 flex items-center justify-between shadow-lg"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-400/20 flex items-center justify-center text-xl"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-run text-indigo-500"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M11.007 5a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                    <path d="M4 17l5 1l.75 -1.5" />
+                    <path d="M15 21v-4l-4 -3l1 -6" />
+                    <path d="M7 12v-3l5 -1l3 3l3 1" />
+                  </svg>
+                </div>
+                <div class="text-left">
+                  <h3 class="font-bold text-base text-white">Run Distance</h3>
+                  <p class="text-xs text-slate-400 mt-0.5">
+                    Daily running mileage
+                  </p>
+                </div>
+              </div>
+              <span class="text-slate-500 text-xl font-semibold"></span>
+            </button>
+
+            <!-- Hydration Button -->
+            <button
+              onclick="openMobileGraphModal('hydration')"
+              class="w-full bg-slate-800 active:scale-[0.98] transition-all rounded-2xl p-4 border border-slate-700 flex items-center justify-between shadow-lg"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-400/20 flex items-center justify-center text-xl"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-bottle text-blue-500"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M10 5h4v-2a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1v2" />
+                    <path
+                      d="M14 3.5c0 1.626 .507 3.212 1.45 4.537l.05 .07a8.093 8.093 0 0 1 1.5 4.694v6.199a2 2 0 0 1 -2 2h-6a2 2 0 0 1 -2 -2v-6.2c0 -1.682 .524 -3.322 1.5 -4.693l.05 -.07a7.823 7.823 0 0 0 1.45 -4.537"
+                    />
+                    <path
+                      d="M7 14.803a2.4 2.4 0 0 0 1 -.803a2.4 2.4 0 0 1 2 -1a2.4 2.4 0 0 1 2 1a2.4 2.4 0 0 0 2 1a2.4 2.4 0 0 0 2 -1a2.4 2.4 0 0 1 1 -.805"
+                    />
+                  </svg>
+                </div>
+                <div class="text-left">
+                  <h3 class="font-bold text-base text-white">Water Intake</h3>
+                  <p class="text-xs text-slate-400 mt-0.5">
+                    Hydration history & daily goal
+                  </p>
+                </div>
+              </div>
+              <span class="text-slate-500 text-xl font-semibold"></span>
+            </button>
+
+            <!-- Calories Button -->
+            <button
+              onclick="openMobileGraphModal('calories')"
+              class="w-full bg-slate-800 active:scale-[0.98] transition-all rounded-2xl p-4 border border-slate-700 flex items-center justify-between shadow-lg"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-400/20 flex items-center justify-center text-xl"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-meat text-amber-500"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path
+                      d="M13.62 8.382l1.966 -1.967a2 2 0 1 1 3.414 -1.415a2 2 0 1 1 -1.413 3.414l-1.82 1.821"
+                    />
+                    <path
+                      d="M5.904 18.596c2.733 2.734 5.9 4 7.07 2.829c1.172 -1.172 -.094 -4.338 -2.828 -7.071c-2.733 -2.734 -5.9 -4 -7.07 -2.829c-1.172 1.172 .094 4.338 2.828 7.071"
+                    />
+                    <path d="M7.5 16l1 1" />
+                    <path
+                      d="M12.975 21.425c3.905 -3.906 4.855 -9.288 2.121 -12.021c-2.733 -2.734 -8.115 -1.784 -12.02 2.121"
+                    />
+                  </svg>
+                </div>
+                <div class="text-left">
+                  <h3 class="font-bold text-base text-white">
+                    Calories Burned
+                  </h3>
+                  <p class="text-xs text-slate-400 mt-0.5">
+                    Active energy output
+                  </p>
+                </div>
+              </div>
+              <span class="text-slate-500 text-xl font-semibold"></span>
+            </button>
+
+            <!-- Run Quality -->
+            <button
+              onclick="openMobileGraphModal('runquality')"
+              class="w-full bg-slate-800 active:scale-[0.98] transition-all rounded-2xl p-4 border border-slate-700 flex items-center justify-between shadow-lg"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-400/20 flex items-center justify-center text-xl"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-percentage text-purple-500"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M16 17a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+                    <path d="M6 7a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+                    <path d="M6 18l12 -12" />
+                  </svg>
+                </div>
+                <div class="text-left">
+                  <h3 class="font-bold text-base text-white">Run Quality</h3>
+                  <p class="text-xs text-slate-400 mt-0.5">
+                    Quality of the run
+                  </p>
+                </div>
+              </div>
+              <span class="text-slate-500 text-xl font-semibold"></span>
+            </button>
+
+            <!-- Heart Rate Button -->
+            <button
+              onclick="openMobileGraphModal('heartrate')"
+              class="w-full bg-slate-800 active:scale-[0.98] transition-all rounded-2xl p-4 border border-slate-700 flex items-center justify-between shadow-lg"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-400/20 flex items-center justify-center text-xl"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-heart text-rose-500"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path
+                      d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"
+                    />
+                  </svg>
+                </div>
+                <div class="text-left">
+                  <h3 class="font-bold text-base text-white">Heart Rate</h3>
+                  <p class="text-xs text-slate-400 mt-0.5">
+                    Average & resting BPM
+                  </p>
+                </div>
+              </div>
+              <span class="text-slate-500 text-xl font-semibold"></span>
+            </button>
+
+            <!-- Temperature Button -->
+            <button
+              onclick="openMobileGraphModal('temperature')"
+              class="w-full bg-slate-800 active:scale-[0.98] transition-all rounded-2xl p-4 border border-slate-700 flex items-center justify-between shadow-lg"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-400/20 flex items-center justify-center text-xl"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-temperature text-cyan-500"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M10 13.5a4 4 0 1 0 4 0v-8.5a2 2 0 0 0 -4 0v8.5" />
+                    <path d="M10 9l4 0" />
+                  </svg>
+                </div>
+                <div class="text-left">
+                  <h3 class="font-bold text-base text-white">Temperature</h3>
+                  <p class="text-xs text-slate-400 mt-0.5">
+                    Weather & running conditions
+                  </p>
+                </div>
+              </div>
+              <span class="text-slate-500 text-xl font-semibold"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Fullscreen Mobile Graph Modal -->
+        <div
+          id="mobileGraphModal"
+          class="fixed inset-0 z-50 bg-[#0b1120]/95 backdrop-blur-md hidden flex-col p-5"
+        >
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2
+                id="mobileModalGraphTitle"
+                class="text-xl font-bold text-white"
+              >
+                Water Intake
+              </h2>
+              <p id="mobileModalGraphSub" class="text-xs text-slate-400">
+                Daily performance history
+              </p>
+            </div>
+            <button
+              onclick="closeMobileGraphModal()"
+              class="w-9 h-9 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center hover:bg-slate-700 active:scale-95 transition"
+            >
+              ✕
+            </button>
+          </div>
+
+          <!-- Chart Canvas Container -->
+          <div
+            class="relative w-full flex-1 bg-[#131b2e] border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-center shadow-inner"
+          >
+            <canvas id="mobilePopupChart"></canvas>
+          </div>
+        </div>
       </div>
 
       <div
@@ -592,8 +868,10 @@
           Zone
         </h1>
       </div>
+
       <!-- Bottom Navigation Bar -->
       <nav
+        id="mobileBottomNav"
         class="md:hidden fixed bottom-0 left-0 right-0 bg-[#0f172a] border-t border-slate-800 flex items-center h-20 pb-2 z-50"
       >
         <!-- Graphs Tab -->
@@ -708,7 +986,7 @@
 
         <!-- Zones Tab -->
         <button
-          onclick="showPage('zonesPage')"
+          onclick="toggleZoneModal()"
           class="flex-1 flex flex-col items-center justify-center gap-1 text-slate-400 transition-colors"
         >
           <svg
@@ -801,6 +1079,19 @@
             );
           }
 
+          const altitude = weatherData.elevation;
+          const altitudeInput =
+            document.getElementById("altitudeInput") ||
+            document.getElementById("elevation");
+
+          if (altitudeInput && altitude !== undefined) {
+            altitudeInput.value = Math.round(altitude);
+            altitudeInput.dispatchEvent(
+              new Event("input", {
+                bubbles: true,
+              }),
+            );
+          }
           console.log("Hourly forecast:", weatherData.hourly);
         } catch (error) {
           console.error("Weather error:", error);
@@ -2178,6 +2469,144 @@
           });
         }
       }
+
+      let mobileModalChartInstance = null;
+
+      function openMobileGraphModal(type) {
+        const modal = document.getElementById("mobileGraphModal");
+        const bottomNav = document.getElementById("mobileBottomNav");
+        const titleEl = document.getElementById("mobileModalGraphTitle");
+        const canvas = document.getElementById("mobilePopupChart");
+        if (!modal || !canvas) return;
+
+        // 1. Hide the bottom navigation bar
+        if (bottomNav) {
+          bottomNav.classList.add("hidden");
+        }
+
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+
+        const categoryMeta = {
+          hydration: { title: "Water Intake (L)", unit: "L" },
+          distance: { title: "Run Distance (km)", unit: "km" },
+          calories: { title: "Calories Burned (kcal)", unit: "kcal" },
+          heartrate: { title: "Heart Rate (bpm)", unit: "bpm" },
+          runquality: { title: "Run Quality (%)", unit: "%" },
+          temperature: { title: "Temperature (°C)", unit: "°C" },
+        };
+
+        const meta = categoryMeta[type] || {
+          title: "Performance Chart",
+          unit: "",
+        };
+        if (titleEl) titleEl.textContent = meta.title;
+
+        if (mobileModalChartInstance) {
+          mobileModalChartInstance.destroy();
+        }
+
+        let labels = [];
+        let datasets = [];
+
+        if (type === "hydration") {
+          const history = JSON.parse(
+            localStorage.getItem("hydrationHistory") || "{}",
+          );
+          const today = new Date().toISOString().split("T")[0];
+          const liveVal = Number(
+            document.getElementById("hydration")?.value || 0,
+          );
+          const liveIdeal =
+            typeof getSafelyIdealWater === "function"
+              ? getSafelyIdealWater()
+              : 2.5;
+
+          history[today] = { actual: liveVal, ideal: liveIdeal };
+          labels = Object.keys(history).sort();
+
+          datasets = [
+            {
+              label: "Liters Drunk",
+              data: labels.map((d) =>
+                typeof history[d] === "object" ? history[d].actual : history[d],
+              ),
+              borderColor: "#60a5fa",
+              backgroundColor: "rgba(96, 165, 250, 0.2)",
+              borderWidth: 3,
+              pointRadius: 5,
+              tension: 0.3,
+            },
+            {
+              label: "Ideal Goal",
+              data: labels.map((d) =>
+                typeof history[d] === "object" ? history[d].ideal : liveIdeal,
+              ),
+              borderColor: "#22c55e",
+              borderDash: [5, 5],
+              borderWidth: 2.5,
+              pointRadius: 5,
+              tension: 0.3,
+            },
+          ];
+        } else {
+          // Mock data baseline for remaining categories
+          labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Today"];
+          datasets = [
+            {
+              label: meta.title,
+              data: [5, 7, 4, 8, 6, 9, 7],
+              borderColor: "#818cf8",
+              backgroundColor: "rgba(129, 140, 248, 0.2)",
+              borderWidth: 3,
+              pointRadius: 5,
+              tension: 0.3,
+            },
+          ];
+        }
+
+        mobileModalChartInstance = new Chart(canvas, {
+          type: "line",
+          data: { labels, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { labels: { color: "#ffffff", font: { size: 12 } } },
+            },
+            scales: {
+              x: {
+                ticks: { color: "#94a3b8" },
+                grid: { color: "rgba(148, 163, 184, 0.1)" },
+              },
+              y: {
+                beginAtZero: true,
+                ticks: { color: "#94a3b8" },
+                grid: { color: "rgba(148, 163, 184, 0.1)" },
+              },
+            },
+          },
+        });
+      }
+
+      function closeMobileGraphModal() {
+        const modal = document.getElementById("mobileGraphModal");
+        const bottomNav = document.getElementById("mobileBottomNav");
+
+        if (modal) {
+          modal.classList.add("hidden");
+          modal.classList.remove("flex");
+        }
+
+        // 2. Bring back the bottom navigation bar
+        if (bottomNav) {
+          bottomNav.classList.remove("hidden");
+        }
+      }
+
+      // Make functions accessible to HTML inline onclick attributes
+      window.openMobileGraphModal = openMobileGraphModal;
+      window.closeMobileGraphModal = closeMobileGraphModal;
     </script>
     <!-- 1. Floating Action Button -->
 
@@ -2217,7 +2646,6 @@
     </button>
 
     <!-- 2. Floating Water Button -->
-    <!-- Desktop Water Button -->
     <button
       onclick="toggleWaterModal()"
       class="app-ui-element hidden md:flex fixed top-24 right-6 z-50 transition-all active:scale-95 outline-none"
@@ -2292,6 +2720,43 @@
             <path
               d="M12.975 21.425c3.905 -3.906 4.855 -9.288 2.121 -12.021c-2.733 -2.734 -8.115 -1.784 -12.02 2.121"
             />
+          </svg>
+        </div>
+      </div>
+    </button>
+
+    <!-- 2. Floating Water Button -->
+    <button
+      onclick="toggleZoneModal()"
+      class="app-ui-element hidden md:flex fixed top-[313px] right-6 z-50 transition-all active:scale-95 outline-none"
+    >
+      <!-- This div ID now controls the WHOLE border color -->
+      <div
+        id="waterBorderDesktop"
+        class="p-[1.5px] rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 shrink-0 transition-all duration-700"
+      >
+        <!-- Inner box matches the runner exactly -->
+        <div
+          class="bg-slate-900 w-14 h-14 flex items-center justify-center rounded-[15px] hover:bg-slate-800"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="icon icon-tabler icons-tabler-outline icon-tabler-timeline"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M4 16l6 -7l5 5l5 -6" />
+            <path d="M14 14a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+            <path d="M9 9a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+            <path d="M3 16a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+            <path d="M19 8a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
           </svg>
         </div>
       </div>
@@ -2917,8 +3382,10 @@
         }
 
         const value = Number(hydrationInput.value) || 0;
+        const currentIdeal = getSafelyIdealWater();
 
         localStorage.setItem(HYDRATION_LIVE_KEY, String(value));
+        localStorage.setItem("hydrationLiveIdeal", String(currentIdeal));
 
         if (!localStorage.getItem(HYDRATION_DATE_KEY)) {
           localStorage.setItem(HYDRATION_DATE_KEY, getLocalDateKey());
@@ -2927,14 +3394,19 @@
 
       function savePreviousHydrationDay(previousDate) {
         const history = getHydrationHistory();
-
-        const previousValue =
+        const previousActual =
           Number(localStorage.getItem(HYDRATION_LIVE_KEY)) || 0;
+        const previousIdeal =
+          Number(localStorage.getItem("hydrationLiveIdeal")) ||
+          getSafelyIdealWater();
 
-        history[previousDate] = previousValue;
+        // Store both actual and ideal for that date
+        history[previousDate] = {
+          actual: previousActual,
+          ideal: previousIdeal,
+        };
 
         localStorage.setItem(HYDRATION_HISTORY_KEY, JSON.stringify(history));
-
         localStorage.setItem(HYDRATION_LIVE_KEY, "0");
       }
 
@@ -2967,41 +3439,56 @@
         }
       }
 
+      function getSafelyIdealWater() {
+        let target = 2.5;
+        try {
+          if (
+            typeof window.idealWater !== "undefined" &&
+            !isNaN(Number(window.idealWater))
+          ) {
+            target = Number(window.idealWater);
+          } else if (localStorage.getItem("idealWater")) {
+            target = Number(localStorage.getItem("idealWater"));
+          }
+        } catch (e) {
+          target = 2.5;
+        }
+        return target;
+      }
+
       function renderHydrationChart() {
         const canvas = document.getElementById("hydrationChart");
-
-        if (!canvas) {
-          return;
-        }
+        if (!canvas) return;
 
         saveHydrationSnapshot();
 
         const history = getHydrationHistory();
-
         const today = getLocalDateKey();
-
         const currentValue = Number(hydrationInput?.value) || 0;
+        const currentIdeal = getSafelyIdealWater();
 
-        history[today] = currentValue;
+        // Map today's live data
+        history[today] = {
+          actual: currentValue,
+          ideal: currentIdeal,
+        };
 
         const dates = Object.keys(history).sort();
 
-        const actualValues = dates.map((date) => history[date]);
+        // Handle backwards compatibility if older history entries were just numbers
+        const actualValues = dates.map((date) => {
+          const item = history[date];
+          return typeof item === "object"
+            ? Number(item.actual) || 0
+            : Number(item) || 0;
+        });
 
-        // Safely check if idealWater exists globally, or read from localStorage, or default to 2.5
-        let currentIdeal = 2.5;
-
-        try {
-          if (typeof idealWater !== "undefined" && !isNaN(Number(idealWater))) {
-            currentIdeal = Number(idealWater);
-          } else if (localStorage.getItem("idealWater")) {
-            currentIdeal = Number(localStorage.getItem("idealWater"));
-          }
-        } catch (e) {
-          currentIdeal = 2.5;
-        }
-
-        const idealValues = dates.map(() => currentIdeal);
+        const idealValues = dates.map((date) => {
+          const item = history[date];
+          return typeof item === "object"
+            ? Number(item.ideal) || currentIdeal
+            : currentIdeal;
+        });
 
         if (hydrationChart) {
           hydrationChart.destroy();
@@ -3009,10 +3496,8 @@
 
         hydrationChart = new Chart(canvas, {
           type: "line",
-
           data: {
             labels: dates,
-
             datasets: [
               {
                 label: "Liters Drunk",
@@ -3021,34 +3506,36 @@
                 backgroundColor: "rgba(96, 165, 250, 0.2)",
                 borderWidth: 3,
                 pointRadius: 5,
+                pointHoverRadius: 8,
+                pointBackgroundColor: "#60a5fa",
                 tension: 0.3,
                 fill: false,
               },
               {
                 label: "Ideal Water",
-                //data: idealValues,
+                data: idealValues,
                 borderColor: "#22c55e",
+                backgroundColor: "rgba(34, 197, 94, 0.1)",
                 borderWidth: 3,
-                borderDash: [8, 6],
-                pointRadius: 0,
-                tension: 0,
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                pointBackgroundColor: "#22c55e",
+                tension: 0.3,
                 fill: false,
               },
             ],
           },
-
           options: {
             responsive: true,
             maintainAspectRatio: false,
-
             plugins: {
               legend: {
                 labels: {
                   color: "#ffffff",
+                  font: { size: 14 },
                 },
               },
             },
-
             scales: {
               x: {
                 title: {
@@ -3056,29 +3543,24 @@
                   text: "Date",
                   color: "#ffffff",
                 },
-
                 ticks: {
                   color: "#cbd5e1",
                 },
-
                 grid: {
                   color: "rgba(148, 163, 184, 0.2)",
                 },
               },
-
               y: {
                 beginAtZero: true,
-
+                suggestedMax: 4,
                 title: {
                   display: true,
-                  text: "Liters Drunk",
+                  text: "Liters (L)",
                   color: "#ffffff",
                 },
-
                 ticks: {
                   color: "#cbd5e1",
                 },
-
                 grid: {
                   color: "rgba(148, 163, 184, 0.2)",
                 },
@@ -3175,6 +3657,501 @@
       checkHydrationMidnight();
 
       setInterval(checkHydrationMidnight, 30 * 1000);
+
+      // Navigation & Views
+      function toggleZoneModal() {
+        const modal = document.getElementById("zoneModal");
+        if (!modal) return;
+
+        const isHidden = modal.classList.contains("hidden");
+        if (isHidden) {
+          // Check if there are previously saved zones in localStorage
+          const savedData = localStorage.getItem("userCalculatedZones");
+
+          if (savedData) {
+            try {
+              const { formula, zones } = JSON.parse(savedData);
+
+              // Populate the UI with saved zones
+              document.getElementById("zoneFormulaUsed").textContent =
+                formula || "Saved Zones";
+              document.getElementById("z1Val").textContent = `${zones.z1} bpm`;
+              document.getElementById("z2Val").textContent = `${zones.z2} bpm`;
+              document.getElementById("z3Val").textContent = `${zones.z3} bpm`;
+              document.getElementById("z4Val").textContent = `${zones.z4} bpm`;
+              document.getElementById("z5Val").textContent = `${zones.z5} bpm`;
+
+              // Open directly to the Result View
+              showZoneView("result");
+            } catch (e) {
+              // If parsing fails, fall back to choice view
+              showZoneView("choice");
+            }
+          } else {
+            // First time: go to the choice view
+            showZoneView("choice");
+          }
+
+          modal.classList.remove("hidden");
+          modal.classList.add("flex");
+        } else {
+          closeZoneModal();
+        }
+      }
+
+      function closeZoneModal() {
+        const modal = document.getElementById("zoneModal");
+        if (modal) {
+          modal.classList.add("hidden");
+          modal.classList.remove("flex");
+        }
+      }
+
+      function showZoneView(view) {
+        const views = {
+          choice: document.getElementById("zoneChoiceView"),
+          calc: document.getElementById("zoneCalcView"),
+          manual: document.getElementById("zoneManualView"),
+          result: document.getElementById("zoneResultView"),
+        };
+
+        Object.keys(views).forEach((k) => {
+          if (views[k]) views[k].classList.add("hidden");
+        });
+
+        if (views[view]) {
+          views[view].classList.remove("hidden");
+          views[view].classList.add("flex");
+        }
+      }
+
+      // Zone Math & Rule Resolution
+      function calculateAndDisplayZones() {
+        const maxHREl = document.getElementById("inputMaxHR");
+        const restingHREl = document.getElementById("inputRestingHR");
+        const lthrEl = document.getElementById("inputLTHR");
+
+        const manualMaxHR =
+          maxHREl && maxHREl.value ? Number(maxHREl.value) : null;
+        const restingHR =
+          restingHREl && restingHREl.value ? Number(restingHREl.value) : null;
+        const lthr = lthrEl && lthrEl.value ? Number(lthrEl.value) : null;
+
+        // Retrieve user age & gender from your app's state or localStorage
+        const age =
+          Number(document.getElementById("age")?.value) ||
+          Number(localStorage.getItem("age")) ||
+          Number(localStorage.getItem("userAge")) ||
+          25;
+        const gender = (
+          document.getElementById("gender")?.value ||
+          localStorage.getItem("gender") ||
+          localStorage.getItem("userGender") ||
+          "male"
+        ).toLowerCase();
+
+        let zones = { z1: "", z2: "", z3: "", z4: "", z5: "" };
+        let formulaName = "";
+
+        // CASE 1: LTHR is provided (Highest priority)
+        if (lthr && lthr > 0) {
+          formulaName = "Formula: LTHR Percentages";
+          zones.z1 = `< ${Math.round(lthr * 0.85)}`;
+          zones.z2 = `${Math.round(lthr * 0.85)} – ${Math.round(lthr * 0.89)}`;
+          zones.z3 = `${Math.round(lthr * 0.9)} – ${Math.round(lthr * 0.94)}`;
+          zones.z4 = `${Math.round(lthr * 0.95)} – ${Math.round(lthr * 0.99)}`;
+          zones.z5 = `${Math.round(lthr * 1.0)} – ${Math.round(lthr * 1.02)}`;
+        }
+        // CASE 2: Max HR (or calculated) + Resting HR -> Karvonen Formula
+        else if (restingHR && restingHR > 0) {
+          let maxHR = manualMaxHR;
+          if (!maxHR) {
+            maxHR =
+              gender === "female"
+                ? Math.round(206 - 0.88 * age)
+                : Math.round(208 - 0.7 * age);
+          }
+          let HRR = maxHR - restingHR;
+          formulaName = `Formula: Karvonen`;
+          zones.z1 = `${Math.round(HRR * 0.5 + restingHR)} – ${Math.round(HRR * 0.6 + restingHR)}`;
+          zones.z2 = `${Math.round(HRR * 0.6 + restingHR)} – ${Math.round(HRR * 0.7 + restingHR)}`;
+          zones.z3 = `${Math.round(HRR * 0.7 + restingHR)} – ${Math.round(HRR * 0.8 + restingHR)}`;
+          zones.z4 = `${Math.round(HRR * 0.8 + restingHR)} – ${Math.round(HRR * 0.9 + restingHR)}`;
+          zones.z5 = `${Math.round(HRR * 0.9 + restingHR)} – ${Math.round(HRR * 1.0 + restingHR)}`;
+        }
+        // CASE 3: Only Max HR provided OR fallback to Tanaka / Gulati formulas
+        else {
+          let maxHR = manualMaxHR;
+          if (!maxHR) {
+            if (gender === "female" || gender === "woman") {
+              maxHR = Math.round(206 - 0.88 * age);
+              formulaName = `Formula: Gulati %Max HR (${maxHR} bpm)`;
+            } else {
+              maxHR = Math.round(208 - 0.7 * age);
+              formulaName = `Formula: Tanaka %Max HR (${maxHR} bpm)`;
+            }
+          } else {
+            formulaName = `Formula: %Max HR (${maxHR} bpm)`;
+          }
+
+          zones.z1 = `${Math.round(maxHR * 0.5)} – ${Math.round(maxHR * 0.6)}`;
+          zones.z2 = `${Math.round(maxHR * 0.6)} – ${Math.round(maxHR * 0.7)}`;
+          zones.z3 = `${Math.round(maxHR * 0.7)} – ${Math.round(maxHR * 0.8)}`;
+          zones.z4 = `${Math.round(maxHR * 0.8)} – ${Math.round(maxHR * 0.9)}`;
+          zones.z5 = `${Math.round(maxHR * 0.9)} – ${Math.round(maxHR * 1.0)}`;
+        }
+
+        // Render results
+        document.getElementById("zoneFormulaUsed").textContent = formulaName;
+        document.getElementById("z1Val").textContent = `${zones.z1} bpm`;
+        document.getElementById("z2Val").textContent = `${zones.z2} bpm`;
+        document.getElementById("z3Val").textContent = `${zones.z3} bpm`;
+        document.getElementById("z4Val").textContent = `${zones.z4} bpm`;
+        document.getElementById("z5Val").textContent = `${zones.z5} bpm`;
+
+        // Save calculation to storage
+        localStorage.setItem(
+          "userCalculatedZones",
+          JSON.stringify({ formula: formulaName, zones }),
+        );
+
+        showZoneView("result");
+      }
+
+      function saveManualZones() {
+        const zones = {
+          z1: `${document.getElementById("mZ1Min")?.value || 0} – ${document.getElementById("mZ1Max")?.value || 0}`,
+          z2: `${document.getElementById("mZ2Min")?.value || 0} – ${document.getElementById("mZ2Max")?.value || 0}`,
+          z3: `${document.getElementById("mZ3Min")?.value || 0} – ${document.getElementById("mZ3Max")?.value || 0}`,
+          z4: `${document.getElementById("mZ4Min")?.value || 0} – ${document.getElementById("mZ4Max")?.value || 0}`,
+          z5: `${document.getElementById("mZ5Min")?.value || 0} – ${document.getElementById("mZ5Max")?.value || 0}`,
+        };
+
+        document.getElementById("zoneFormulaUsed").textContent =
+          "Manual Custom Zones";
+        document.getElementById("z1Val").textContent = `${zones.z1} bpm`;
+        document.getElementById("z2Val").textContent = `${zones.z2} bpm`;
+        document.getElementById("z3Val").textContent = `${zones.z3} bpm`;
+        document.getElementById("z4Val").textContent = `${zones.z4} bpm`;
+        document.getElementById("z5Val").textContent = `${zones.z5} bpm`;
+
+        localStorage.setItem(
+          "userCalculatedZones",
+          JSON.stringify({ formula: "Manual", zones }),
+        );
+        showZoneView("result");
+      }
+
+      // Expose globally for HTML inline onclick
+      window.toggleZoneModal = toggleZoneModal;
+      window.closeZoneModal = closeZoneModal;
+      window.showZoneView = showZoneView;
+      window.calculateAndDisplayZones = calculateAndDisplayZones;
+      window.saveManualZones = saveManualZones;
     </script>
+
+    <!-- Heart Rate Zones Modal -->
+    <div
+      id="zoneModal"
+      class="fixed inset-0 z-50 bg-[#0b1120]/95 backdrop-blur-md hidden items-center justify-center p-4"
+    >
+      <div
+        class="relative w-full max-w-lg bg-[#131b2e] border border-slate-800 rounded-2xl p-6 shadow-2xl text-white max-h-[90vh] overflow-y-auto"
+      >
+        <!-- Modal Top Bar -->
+        <div
+          class="flex items-center justify-between pb-4 border-b border-slate-800 mb-5"
+        >
+          <div>
+            <h2 class="text-xl font-bold tracking-wide">Heart Rate Zones</h2>
+            <p class="text-xs text-slate-400">Optimize training intensity</p>
+          </div>
+          <button
+            onclick="closeZoneModal()"
+            class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- VIEW 1: Choice Menu -->
+        <div id="zoneChoiceView" class="flex flex-col gap-3 py-4">
+          <button
+            onclick="showZoneView('calc')"
+            class="w-full bg-[#1e293b] hover:bg-[#334155] border border-slate-700/80 rounded-xl p-4 text-left transition flex items-center justify-between group"
+          >
+            <div>
+              <h3
+                class="font-bold text-base text-blue-400 group-hover:text-blue-300"
+              >
+                Calculate Zones
+              </h3>
+              <p class="text-xs text-slate-400 mt-1">
+                Automatic via Max HR, Karvonen, or LTHR formulas
+              </p>
+            </div>
+            <span class="text-slate-400 group-hover:text-white text-xl">›</span>
+          </button>
+
+          <button
+            onclick="showZoneView('manual')"
+            class="w-full bg-[#1e293b] hover:bg-[#334155] border border-slate-700/80 rounded-xl p-4 text-left transition flex items-center justify-between group"
+          >
+            <div>
+              <h3
+                class="font-bold text-base text-purple-400 group-hover:text-purple-300"
+              >
+                Enter Zones Manually
+              </h3>
+              <p class="text-xs text-slate-400 mt-1">
+                Input your custom BPM ranges directly
+              </p>
+            </div>
+            <span class="text-slate-400 group-hover:text-white text-xl">›</span>
+          </button>
+        </div>
+
+        <!-- VIEW 2: Calculator Inputs -->
+        <div id="zoneCalcView" class="hidden flex-col gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1"
+              >Max Heart Rate (bpm)</label
+            >
+            <input
+              id="inputMaxHR"
+              type="number"
+              placeholder="Optional (auto-calculated from age/gender if blank)"
+              class="w-full bg-[#0b1120] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1"
+              >Resting Heart Rate (bpm)</label
+            >
+            <input
+              id="inputRestingHR"
+              type="number"
+              placeholder="Optional (enables Karvonen calculation)"
+              class="w-full bg-[#0b1120] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1"
+              >Lactate Threshold Heart Rate (LTHR)</label
+            >
+            <input
+              id="inputLTHR"
+              type="number"
+              placeholder="Optional (highest accuracy method)"
+              class="w-full bg-[#0b1120] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-3 pt-3 mt-2 border-t border-slate-800">
+            <button
+              onclick="showZoneView('choice')"
+              class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition"
+            >
+              Back
+            </button>
+            <button
+              onclick="calculateAndDisplayZones()"
+              class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-sm font-bold shadow-lg shadow-blue-500/20 transition"
+            >
+              Calculate
+            </button>
+          </div>
+        </div>
+
+        <!-- VIEW 3: Manual Zone Entry -->
+        <div id="zoneManualView" class="hidden flex-col gap-3">
+          <p class="text-xs text-slate-400 mb-1">
+            Enter the start & end BPM for each zone:
+          </p>
+          <div class="grid grid-cols-2 gap-2">
+            <input
+              id="mZ1Min"
+              type="number"
+              placeholder="Z1 Min"
+              class="bg-[#0b1120] border border-slate-700 rounded-lg p-2 text-xs"
+            />
+            <input
+              id="mZ1Max"
+              type="number"
+              placeholder="Z1 Max"
+              class="bg-[#0b1120] border border-slate-700 rounded-lg p-2 text-xs"
+            />
+            <input
+              id="mZ2Min"
+              type="number"
+              placeholder="Z2 Min"
+              class="bg-[#0b1120] border border-slate-700 rounded-lg p-2 text-xs"
+            />
+            <input
+              id="mZ2Max"
+              type="number"
+              placeholder="Z2 Max"
+              class="bg-[#0b1120] border border-slate-700 rounded-lg p-2 text-xs"
+            />
+            <input
+              id="mZ3Min"
+              type="number"
+              placeholder="Z3 Min"
+              class="bg-[#0b1120] border border-slate-700 rounded-lg p-2 text-xs"
+            />
+            <input
+              id="mZ3Max"
+              type="number"
+              placeholder="Z3 Max"
+              class="bg-[#0b1120] border border-slate-700 rounded-lg p-2 text-xs"
+            />
+            <input
+              id="mZ4Min"
+              type="number"
+              placeholder="Z4 Min"
+              class="bg-[#0b1120] border border-slate-700 rounded-lg p-2 text-xs"
+            />
+            <input
+              id="mZ4Max"
+              type="number"
+              placeholder="Z4 Max"
+              class="bg-[#0b1120] border border-slate-700 rounded-lg p-2 text-xs"
+            />
+            <input
+              id="mZ5Min"
+              type="number"
+              placeholder="Z5 Min"
+              class="bg-[#0b1120] border border-slate-700 rounded-lg p-2 text-xs"
+            />
+            <input
+              id="mZ5Max"
+              type="number"
+              placeholder="Z5 Max"
+              class="bg-[#0b1120] border border-slate-700 rounded-lg p-2 text-xs"
+            />
+          </div>
+          <div class="flex gap-3 pt-3 mt-2 border-t border-slate-800">
+            <button
+              onclick="showZoneView('choice')"
+              class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition"
+            >
+              Back
+            </button>
+            <button
+              onclick="saveManualZones()"
+              class="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-sm font-bold transition"
+            >
+              Save Zones
+            </button>
+          </div>
+        </div>
+
+        <!-- VIEW 4: Results Display -->
+        <div id="zoneResultView" class="hidden flex-col gap-3">
+          <div class="flex items-center justify-between mb-1">
+            <span
+              id="zoneFormulaUsed"
+              class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30"
+              >Formula Applied</span
+            >
+          </div>
+
+          <!-- Zone Cards -->
+          <div class="flex flex-col gap-2">
+            <div
+              class="bg-[#1e293b]/70 border-l-4 border-slate-400 rounded-xl p-3 flex justify-between items-center"
+            >
+              <div>
+                <div class="font-bold text-sm text-slate-200">
+                  Zone 1 • Active Recovery
+                </div>
+                <div class="text-xs text-slate-400">Easy recovery pace</div>
+              </div>
+              <div id="z1Val" class="text-base font-black text-white">
+                -- bpm
+              </div>
+            </div>
+
+            <div
+              class="bg-[#1e293b]/70 border-l-4 border-blue-500 rounded-xl p-3 flex justify-between items-center"
+            >
+              <div>
+                <div class="font-bold text-sm text-blue-300">
+                  Zone 2 • Aerobic / Base
+                </div>
+                <div class="text-xs text-slate-400">
+                  Fat burning & endurance
+                </div>
+              </div>
+              <div id="z2Val" class="text-base font-black text-white">
+                -- bpm
+              </div>
+            </div>
+
+            <div
+              class="bg-[#1e293b]/70 border-l-4 border-emerald-500 rounded-xl p-3 flex justify-between items-center"
+            >
+              <div>
+                <div class="font-bold text-sm text-emerald-300">
+                  Zone 3 • Tempo
+                </div>
+                <div class="text-xs text-slate-400">Aerobic fitness</div>
+              </div>
+              <div id="z3Val" class="text-base font-black text-white">
+                -- bpm
+              </div>
+            </div>
+
+            <div
+              class="bg-[#1e293b]/70 border-l-4 border-amber-500 rounded-xl p-3 flex justify-between items-center"
+            >
+              <div>
+                <div class="font-bold text-sm text-amber-300">
+                  Zone 4 • Threshold
+                </div>
+                <div class="text-xs text-slate-400">
+                  Lactate threshold boost
+                </div>
+              </div>
+              <div id="z4Val" class="text-base font-black text-white">
+                -- bpm
+              </div>
+            </div>
+
+            <div
+              class="bg-[#1e293b]/70 border-l-4 border-rose-500 rounded-xl p-3 flex justify-between items-center"
+            >
+              <div>
+                <div class="font-bold text-sm text-rose-300">
+                  Zone 5 • Super-Threshold / Max
+                </div>
+                <div class="text-xs text-slate-400">Peak power & speed</div>
+              </div>
+              <div id="z5Val" class="text-base font-black text-white">
+                -- bpm
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-3 mt-2 border-t border-slate-800">
+            <button
+              onclick="showZoneView('choice')"
+              class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition"
+            >
+              Recalculate
+            </button>
+            <button
+              onclick="closeZoneModal()"
+              class="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
