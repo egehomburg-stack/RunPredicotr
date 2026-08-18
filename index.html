@@ -3374,29 +3374,41 @@
         </div>
 
         <!-- VIEW 3: Prepare for an Event -->
+        <!-- VIEW 3: Prepare for an Event -->
         <div id="prepareEventView" class="hidden space-y-4 mt-5">
-          <button
-            onclick="switchPrepareView('menu')"
-            class="text-xs text-slate-400 hover:text-white flex items-center gap-1 mb-2"
-          >
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <!-- Top Action Bar -->
+          <div class="flex items-center justify-between mb-2">
+            <button
+              onclick="switchPrepareView('menu')"
+              class="text-xs text-slate-400 hover:text-white flex items-center gap-1"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 19l-7-7 7-7"
-              ></path>
-            </svg>
-            Back to options
-          </button>
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 19l-7-7 7-7"
+                ></path>
+              </svg>
+              Back to options
+            </button>
+            <!-- Reset button (only visible when viewing an existing plan) -->
+            <button
+              id="btnResetEventPlan"
+              onclick="resetEventPlan()"
+              class="hidden text-xs text-rose-400 hover:text-rose-300 font-medium transition"
+            >
+              Reset & Edit Inputs
+            </button>
+          </div>
 
-          <!-- Baseline Form -->
-          <div class="space-y-3">
+          <!-- 1. INPUT FORM SECTION (Hidden once plan is calculated) -->
+          <div id="eventInputsSection" class="space-y-3">
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="text-xs text-slate-400"
@@ -3492,20 +3504,116 @@
                 />
               </div>
             </div>
+
+            <button
+              onclick="calculateEventPlan()"
+              class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white font-bold text-sm shadow-lg shadow-purple-500/20 transition"
+            >
+              Calculate Training Blueprint
+            </button>
           </div>
 
-          <button
-            onclick="calculateEventPlan()"
-            class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white font-bold text-sm shadow-lg shadow-purple-500/20 transition"
-          >
-            Calculate Training Blueprint
-          </button>
+          <!-- 2. CALENDAR VIEW ONLY (Shown after calculation or from "See Plan") -->
+          <div id="eventCalendarSection" class="hidden space-y-4 text-xs">
+            <!-- Overview Card -->
+            <div
+              id="eventOverviewCard"
+              class="p-4 bg-slate-900/90 rounded-2xl border border-slate-800 space-y-3"
+            ></div>
 
-          <!-- Event Plan Result Box -->
-          <div
-            id="eventPlanResult"
-            class="hidden mt-4 p-4 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-4 text-xs"
-          ></div>
+            <!-- Calendar Container -->
+            <div
+              class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-3"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <h4 id="calPeriodTitle" class="text-sm font-bold text-white">
+                    Training Schedule
+                  </h4>
+                  <span
+                    id="calPhaseBadge"
+                    class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                    >Phase 1: Base</span
+                  >
+                </div>
+
+                <div
+                  class="flex items-center bg-slate-800 p-0.5 rounded-xl border border-slate-700"
+                >
+                  <button
+                    type="button"
+                    id="btnViewWeek"
+                    onclick="setCalendarMode('week')"
+                    class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-purple-600 text-white shadow"
+                  >
+                    Weekly
+                  </button>
+                  <button
+                    type="button"
+                    id="btnViewMonth"
+                    onclick="setCalendarMode('month')"
+                    class="px-2.5 py-1 rounded-lg text-[11px] font-medium text-slate-400 hover:text-white"
+                  >
+                    Monthly
+                  </button>
+                </div>
+              </div>
+
+              <div
+                class="flex items-center justify-between pt-1 border-t border-slate-800/60 text-slate-400"
+              >
+                <button
+                  type="button"
+                  onclick="navigateCalendar(-1)"
+                  class="flex items-center gap-1 hover:text-white px-2 py-1 rounded-lg hover:bg-slate-800"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                  <span>Prev</span>
+                </button>
+
+                <span
+                  id="calCurrentLabel"
+                  class="font-semibold text-slate-200 text-xs"
+                  >Week 1</span
+                >
+
+                <button
+                  type="button"
+                  onclick="navigateCalendar(1)"
+                  class="flex items-center gap-1 hover:text-white px-2 py-1 rounded-lg hover:bg-slate-800"
+                >
+                  <span>Next</span>
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <div id="calendarGridContainer" class="mt-2"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -4314,6 +4422,12 @@
         if (modal) modal.classList.add("hidden");
       }
 
+      // Load any saved plan on startup
+      let savedPlanJSON = localStorage.getItem("userEventPlan");
+      let generatedEventPlan = savedPlanJSON ? JSON.parse(savedPlanJSON) : null;
+      let currentCalMode = "week";
+      let currentCalIndex = 0;
+
       function switchPrepareView(view) {
         const menu = document.getElementById("prepareMenuView");
         const run = document.getElementById("prepareRunView");
@@ -4328,15 +4442,157 @@
         if (view === "menu") {
           title.innerText = "Prepare";
           subtitle.innerText = "Optimize upcoming runs & race goals";
+          updateMenuButtons(); // Updates "Prepare for an Event" vs "See Plan"
           menu.classList.remove("hidden");
         } else if (view === "run") {
           title.innerText = "Prepare for a Run";
           subtitle.innerText = "Hydration, nutrition & weather readiness";
           run.classList.remove("hidden");
         } else if (view === "event") {
-          title.innerText = "Prepare for an Event";
-          subtitle.innerText = "Riegel race predictor & phased mileage plan";
+          title.innerText = generatedEventPlan
+            ? "Your Event Blueprint"
+            : "Prepare for an Event";
+          subtitle.innerText = generatedEventPlan
+            ? "View your customized training roadmap"
+            : "Riegel race predictor & phased mileage plan";
+
+          const inputsSec = document.getElementById("eventInputsSection");
+          const calSec = document.getElementById("eventCalendarSection");
+          const resetBtn = document.getElementById("btnResetEventPlan");
+
+          if (generatedEventPlan) {
+            // Already have a plan -> show ONLY calendar
+            inputsSec.classList.add("hidden");
+            calSec.classList.remove("hidden");
+            resetBtn.classList.remove("hidden");
+            renderEventOverview();
+            renderCalendar();
+          } else {
+            // No plan yet -> show inputs only
+            inputsSec.classList.remove("hidden");
+            calSec.classList.add("hidden");
+            resetBtn.classList.add("hidden");
+          }
           event.classList.remove("hidden");
+        }
+      }
+
+      // Dynamically updates Menu Button 2 text
+      function updateMenuButtons() {
+        const eventBtnText = document.querySelector(
+          "#prepareMenuView button:nth-child(2) h4",
+        );
+        const eventBtnSub = document.querySelector(
+          "#prepareMenuView button:nth-child(2) p",
+        );
+
+        if (generatedEventPlan) {
+          if (eventBtnText) eventBtnText.innerText = "See Plan";
+          if (eventBtnSub)
+            eventBtnSub.innerText = "View your active race training calendar";
+        } else {
+          if (eventBtnText) eventBtnText.innerText = "Prepare for an Event";
+          if (eventBtnSub)
+            eventBtnSub.innerText =
+              "Riegel race predictor, phased mileage & custom schedule";
+        }
+      }
+
+      function calculateEventPlan() {
+        const d1 = parseFloat(document.getElementById("eventBaseDist").value);
+        const t1Sec = timeStringToSeconds(
+          document.getElementById("eventBaseTime").value,
+        );
+        const currentWeeklyKm =
+          parseFloat(document.getElementById("eventCurrentWeeklyKm").value) ||
+          20;
+        const runsPerWeek =
+          parseInt(document.getElementById("eventRunsPerWeek").value) || 4;
+        const d2 = parseFloat(
+          document.getElementById("eventGoalDistance").value,
+        );
+        const goalSec = timeStringToSeconds(
+          document.getElementById("eventGoalTime").value,
+        );
+        const totalWeeks =
+          parseInt(document.getElementById("eventTotalWeeks").value) || 16;
+
+        if (!t1Sec || !goalSec) {
+          alert("Please enter valid benchmark and goal times!");
+          return;
+        }
+
+        // 1. Calculations
+        const riegelSec = t1Sec * Math.pow(d2 / d1, 1.06);
+        const gapPercent = ((1 - goalSec / riegelSec) * 100).toFixed(1);
+
+        const weeks = [];
+        const baseWeeks = Math.round(totalWeeks * 0.4);
+        const buildWeeks = Math.round(totalWeeks * 0.35);
+        const peakWeeks = Math.round(totalWeeks * 0.15);
+
+        let rollingMileage = currentWeeklyKm;
+        const targetPeakMileage = Math.max(
+          currentWeeklyKm * 1.3,
+          d2 >= 42 ? 55 : d2 >= 21 ? 40 : 30,
+        );
+
+        for (let w = 1; w <= totalWeeks; w++) {
+          let phase = "Base";
+          if (w > baseWeeks + buildWeeks + peakWeeks) phase = "Taper";
+          else if (w > baseWeeks + buildWeeks) phase = "Peak";
+          else if (w > baseWeeks) phase = "Build";
+
+          if (phase === "Taper") {
+            rollingMileage *= 0.75;
+          } else if (w % 4 === 0) {
+            rollingMileage *= 0.82;
+          } else if (rollingMileage < targetPeakMileage) {
+            rollingMileage *= 1.06;
+          }
+
+          const weeklyKm = Math.round(rollingMileage);
+          const days = generateWeeklyDays(runsPerWeek, weeklyKm, phase, d2);
+          weeks.push({ weekNumber: w, phase, totalKm: weeklyKm, days });
+        }
+
+        // 2. Save Plan in State & LocalStorage
+        generatedEventPlan = {
+          riegelSec,
+          goalSec,
+          gapPercent,
+          totalWeeks,
+          weeks,
+        };
+        localStorage.setItem(
+          "userEventPlan",
+          JSON.stringify(generatedEventPlan),
+        );
+
+        // 3. Switch UI cleanly: Hide inputs, show calendar
+        document.getElementById("eventInputsSection").classList.add("hidden");
+        document
+          .getElementById("eventCalendarSection")
+          .classList.remove("hidden");
+        document.getElementById("btnResetEventPlan").classList.remove("hidden");
+
+        document.getElementById("prepareModalTitle").innerText =
+          "Your Event Blueprint";
+        document.getElementById("prepareModalSubtitle").innerText =
+          "View your customized training roadmap";
+
+        currentCalMode = "week";
+        currentCalIndex = 0;
+        renderEventOverview();
+        renderCalendar();
+      }
+
+      // Reset Plan function if the user wants to re-enter parameters
+      function resetEventPlan() {
+        if (confirm("Reset this training plan and create a new one?")) {
+          generatedEventPlan = null;
+          localStorage.removeItem("userEventPlan");
+          switchPrepareView("event"); // returns back to clean input form
         }
       }
 
@@ -4462,123 +4718,292 @@
       }
 
       // --- 2. PREPARE FOR AN EVENT CALCULATION ---
-      function calculateEventPlan() {
-        const d1 = parseFloat(document.getElementById("eventBaseDist").value);
-        const t1Sec = timeStringToSeconds(
-          document.getElementById("eventBaseTime").value,
-        );
-        const longestRun =
-          parseFloat(document.getElementById("eventLongestRun").value) || 10;
-        const currentWeeklyKm =
-          parseFloat(document.getElementById("eventCurrentWeeklyKm").value) ||
-          20;
-        const runsPerWeek =
-          parseInt(document.getElementById("eventRunsPerWeek").value) || 4;
-        const d2 = parseFloat(
-          document.getElementById("eventGoalDistance").value,
-        );
-        const goalSec = timeStringToSeconds(
-          document.getElementById("eventGoalTime").value,
-        );
-        const totalWeeks =
-          parseInt(document.getElementById("eventTotalWeeks").value) || 16;
 
-        if (!t1Sec || !goalSec) {
-          alert("Please enter valid times (e.g. 50:00 or 3:45)");
-          return;
+      // ==========================================
+      // EVENT TRAINING CALENDAR GENERATOR & STATE
+      // ==========================================
+
+      // Workout Styling & Color Map
+      const WORKOUT_COLORS = {
+        Rest: {
+          bg: "bg-slate-800/40",
+          border: "border-slate-800",
+          text: "text-slate-500",
+          badge: "bg-slate-800 text-slate-400",
+        },
+        Easy: {
+          bg: "bg-blue-950/30",
+          border: "border-blue-800/40",
+          text: "text-blue-300",
+          badge: "bg-blue-500/20 text-blue-300",
+        },
+        Long: {
+          bg: "bg-purple-950/30",
+          border: "border-purple-800/40",
+          text: "text-purple-300",
+          badge: "bg-purple-500/20 text-purple-300",
+        },
+        Intervals: {
+          bg: "bg-rose-950/30",
+          border: "border-rose-800/40",
+          text: "text-rose-300",
+          badge: "bg-rose-500/20 text-rose-300",
+        },
+        Tempo: {
+          bg: "bg-amber-950/30",
+          border: "border-amber-800/40",
+          text: "text-amber-300",
+          badge: "bg-amber-500/20 text-amber-300",
+        },
+        Recovery: {
+          bg: "bg-emerald-950/30",
+          border: "border-emerald-800/40",
+          text: "text-emerald-300",
+          badge: "bg-emerald-500/20 text-emerald-300",
+        },
+      };
+
+      // Generates Mon -> Sun structured days based on frequency
+      function generateWeeklyDays(runsPerWeek, totalKm, phase, goalDist) {
+        const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+        // Distribution templates for 7 days
+        let pattern = [];
+        if (runsPerWeek === 3) {
+          pattern = [
+            { type: "Easy", ratio: 0.3 },
+            { type: "Rest", ratio: 0 },
+            { type: phase === "Base" ? "Easy" : "Intervals", ratio: 0.25 },
+            { type: "Rest", ratio: 0 },
+            { type: "Rest", ratio: 0 },
+            { type: "Long", ratio: 0.45 },
+            { type: "Rest", ratio: 0 },
+          ];
+        } else if (runsPerWeek === 4) {
+          pattern = [
+            { type: "Easy", ratio: 0.25 },
+            { type: "Rest", ratio: 0 },
+            { type: phase === "Base" ? "Tempo" : "Intervals", ratio: 0.25 },
+            { type: "Rest", ratio: 0 },
+            { type: "Recovery", ratio: 0.15 },
+            { type: "Long", ratio: 0.35 },
+            { type: "Rest", ratio: 0 },
+          ];
+        } else if (runsPerWeek === 5) {
+          pattern = [
+            { type: "Easy", ratio: 0.2 },
+            { type: "Intervals", ratio: 0.2 },
+            { type: "Rest", ratio: 0 },
+            { type: "Tempo", ratio: 0.2 },
+            { type: "Recovery", ratio: 0.1 },
+            { type: "Long", ratio: 0.3 },
+            { type: "Rest", ratio: 0 },
+          ];
+        } else {
+          // 6 runs
+          pattern = [
+            { type: "Easy", ratio: 0.18 },
+            { type: "Intervals", ratio: 0.18 },
+            { type: "Easy", ratio: 0.14 },
+            { type: "Tempo", ratio: 0.18 },
+            { type: "Recovery", ratio: 0.1 },
+            { type: "Long", ratio: 0.22 },
+            { type: "Rest", ratio: 0 },
+          ];
         }
 
-        // 1. Riegel Predicted Potential Time: T2 = T1 * (D2 / D1)^1.06
-        const riegelSec = t1Sec * Math.pow(d2 / d1, 1.06);
+        return dayNames.map((day, idx) => {
+          const item = pattern[idx];
+          const dist =
+            item.type === "Rest"
+              ? 0
+              : Math.max(3, Math.round(totalKm * item.ratio));
+          return {
+            day,
+            type: item.type,
+            km: dist,
+            desc: getWorkoutSummary(item.type, dist),
+          };
+        });
+      }
 
-        // 2. Gap to Goal
-        const gapPercent = ((1 - goalSec / riegelSec) * 100).toFixed(1);
+      function getWorkoutSummary(type, km) {
+        if (type === "Rest") return "Full recovery & rest";
+        if (type === "Easy") return `${km}k Zone 2 conversational`;
+        if (type === "Long") return `${km}k endurance progressive`;
+        if (type === "Intervals") return `2k warm + 6x800m + 2k cool`;
+        if (type === "Tempo")
+          return `2k warm + ${Math.max(3, km - 4)}k at race pace + 2k cool`;
+        if (type === "Recovery") return `${km}k very easy shakeout`;
+        return `${km} km run`;
+      }
 
-        // 3. Phased Breakdown (Base 40%, Build 35%, Peak 15%, Taper 10%)
-        const baseWeeks = Math.round(totalWeeks * 0.4);
-        const buildWeeks = Math.round(totalWeeks * 0.35);
-        const peakWeeks = Math.round(totalWeeks * 0.15);
-        const taperWeeks = Math.max(
-          1,
-          totalWeeks - baseWeeks - buildWeeks - peakWeeks,
-        );
+      // Render Top Riegel Analysis Card
+      function renderEventOverview() {
+        const card = document.getElementById("eventOverviewCard");
+        const { riegelSec, goalSec, gapPercent, totalWeeks } =
+          generatedEventPlan;
 
-        // 4. Workout Structure Generator based on runs per week
-        let weeklyStructure = [];
-        if (runsPerWeek === 3)
-          weeklyStructure = [
-            "1x Easy (Z2)",
-            "1x Quality / Intervals",
-            "1x Long Run",
-          ];
-        else if (runsPerWeek === 4)
-          weeklyStructure = [
-            "1x Easy",
-            "1x Threshold / Intervals",
-            "1x Easy (Recovery)",
-            "1x Long Run",
-          ];
-        else if (runsPerWeek === 5)
-          weeklyStructure = [
-            "1x Easy",
-            "1x Intervals",
-            "1x Easy",
-            "1x Tempo",
-            "1x Long Run",
-          ];
-        else if (runsPerWeek === 6)
-          weeklyStructure = [
-            "1x Easy",
-            "1x Intervals",
-            "1x Easy",
-            "1x Tempo",
-            "1x Recovery",
-            "1x Long Run",
-          ];
-
-        const peakTargetMileage = Math.min(
-          Math.round(currentWeeklyKm * 1.6),
-          d2 >= 42 ? 65 : 45,
-        );
-
-        const resultBox = document.getElementById("eventPlanResult");
-        resultBox.innerHTML = `
-        <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-700">
-            <h5 class="text-xs font-bold text-purple-400 uppercase">Performance Analysis (Riegel Formula)</h5>
-            <p class="mt-1 text-slate-300">Estimated potential based on baseline: <b class="text-white">${formatSecondsToTime(riegelSec)}</b></p>
-            <p class="text-slate-400">Target: <b class="text-white">${formatSecondsToTime(goalSec)}</b> (${gapPercent > 0 ? `${gapPercent}% faster than current base` : `Within comfortable range`})</p>
+        card.innerHTML = `
+        <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+            <span class="text-xs font-bold text-purple-400 uppercase tracking-wider">Race Forecast (Riegel Model)</span>
+            <span class="text-[11px] text-slate-400">${totalWeeks} Weeks Plan</span>
         </div>
-
-        <div>
-            <h5 class="text-xs font-bold text-white mb-2">Phased Roadmap (${totalWeeks} Weeks)</h5>
-            <div class="grid grid-cols-2 gap-2 text-[11px]">
-                <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-                    <span class="text-blue-400 font-bold">Phase 1: Base (${baseWeeks} wks)</span>
-                    <p class="text-slate-400 mt-0.5">Build aerobic volume, 80%+ Easy (Z2). Gradual volume rise.</p>
-                </div>
-                <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-                    <span class="text-amber-400 font-bold">Phase 2: Build (${buildWeeks} wks)</span>
-                    <p class="text-slate-400 mt-0.5">Introduce Threshold & Marathon pace tempos.</p>
-                </div>
-                <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-                    <span class="text-rose-400 font-bold">Phase 3: Peak (${peakWeeks} wks)</span>
-                    <p class="text-slate-400 mt-0.5">Peak weekly volume (~${peakTargetMileage} km) & longest run (~${Math.min(32, Math.round(longestRun * 1.8))} km).</p>
-                </div>
-                <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-                    <span class="text-emerald-400 font-bold">Phase 4: Taper (${taperWeeks} wks)</span>
-                    <p class="text-slate-400 mt-0.5">Reduce volume 30-50%, maintain sharpness & recover.</p>
-                </div>
+        <div class="grid grid-cols-2 gap-3 text-slate-300">
+            <div>
+                <p class="text-[11px] text-slate-400">Current Potential</p>
+                <p class="text-sm font-bold text-white">${formatSecondsToTime(riegelSec)}</p>
             </div>
-        </div>
-
-        <div class="pt-2 border-t border-slate-800">
-            <h5 class="text-xs font-bold text-white mb-1">Weekly Workout Split (${runsPerWeek} days/wk)</h5>
-            <div class="flex flex-wrap gap-1.5 mt-1">
-                ${weeklyStructure.map((w) => `<span class="px-2 py-1 bg-slate-900 border border-slate-700 rounded-md text-[10px] text-slate-300 font-medium">${w}</span>`).join("")}
+            <div>
+                <p class="text-[11px] text-slate-400">Target Goal</p>
+                <p class="text-sm font-bold text-purple-400">${formatSecondsToTime(goalSec)} <span class="text-[10px] font-normal text-slate-400">(${gapPercent > 0 ? `+${gapPercent}% boost` : "On target"})</span></p>
             </div>
         </div>
     `;
-        resultBox.classList.remove("hidden");
+      }
+
+      // Switch between Weekly and Monthly tabs
+      function setCalendarMode(mode) {
+        currentCalMode = mode;
+        const btnWeek = document.getElementById("btnViewWeek");
+        const btnMonth = document.getElementById("btnViewMonth");
+
+        if (mode === "week") {
+          btnWeek.className =
+            "px-2.5 py-1 rounded-lg text-[11px] font-medium bg-purple-600 text-white shadow";
+          btnMonth.className =
+            "px-2.5 py-1 rounded-lg text-[11px] font-medium text-slate-400 hover:text-white";
+          currentCalIndex = 0; // jump to week 1
+        } else {
+          btnMonth.className =
+            "px-2.5 py-1 rounded-lg text-[11px] font-medium bg-purple-600 text-white shadow";
+          btnWeek.className =
+            "px-2.5 py-1 rounded-lg text-[11px] font-medium text-slate-400 hover:text-white";
+          currentCalIndex = 0; // jump to month 1
+        }
+        renderCalendar();
+      }
+
+      // Next / Prev Button Navigation
+      function navigateCalendar(direction) {
+        if (!generatedEventPlan) return;
+
+        if (currentCalMode === "week") {
+          const total = generatedEventPlan.weeks.length;
+          currentCalIndex = Math.max(
+            0,
+            Math.min(total - 1, currentCalIndex + direction),
+          );
+        } else {
+          const totalMonths = Math.ceil(generatedEventPlan.weeks.length / 4);
+          currentCalIndex = Math.max(
+            0,
+            Math.min(totalMonths - 1, currentCalIndex + direction),
+          );
+        }
+        renderCalendar();
+      }
+
+      // Main Render Function for Calendar Grid
+      function renderCalendar() {
+        if (!generatedEventPlan) return;
+
+        const container = document.getElementById("calendarGridContainer");
+        const label = document.getElementById("calCurrentLabel");
+        const badge = document.getElementById("calPhaseBadge");
+
+        if (currentCalMode === "week") {
+          const week = generatedEventPlan.weeks[currentCalIndex];
+          label.innerText = `Week ${week.weekNumber} of ${generatedEventPlan.totalWeeks} (${week.totalKm} km total)`;
+          badge.innerText = `Phase: ${week.phase}`;
+
+          // Color badge based on phase
+          badge.className = `text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+            week.phase === "Base"
+              ? "bg-blue-500/20 text-blue-300 border-blue-500/30"
+              : week.phase === "Build"
+                ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                : week.phase === "Peak"
+                  ? "bg-rose-500/20 text-rose-300 border-rose-500/30"
+                  : "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+          }`;
+
+          // Render 7 Cards (Weekly Detailed View)
+          container.innerHTML = `
+            <div class="grid grid-cols-1 sm:grid-cols-7 gap-2">
+                ${week.days
+                  .map((d) => {
+                    const style =
+                      WORKOUT_COLORS[d.type] || WORKOUT_COLORS["Rest"];
+                    return `
+                        <div class="p-2.5 rounded-xl border ${style.border} ${style.bg} flex flex-col justify-between min-h-[75px] transition hover:scale-[1.02]">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-slate-300 text-xs">${d.day}</span>
+                                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded ${style.badge}">${d.type}</span>
+                            </div>
+                            <div class="mt-2">
+                                ${
+                                  d.type === "Rest"
+                                    ? `<p class="text-[11px] text-slate-500 italic">Rest day</p>`
+                                    : `<p class="text-sm font-extrabold text-white">${d.km} <span class="text-[10px] font-normal text-slate-400">km</span></p>
+                                       <p class="text-[9px] text-slate-400 line-clamp-1 leading-tight mt-0.5">${d.desc}</p>`
+                                }
+                            </div>
+                        </div>
+                    `;
+                  })
+                  .join("")}
+            </div>
+        `;
+        } else {
+          // Monthly Compact 4-Week Block View
+          const startWeekIdx = currentCalIndex * 4;
+          const monthWeeks = generatedEventPlan.weeks.slice(
+            startWeekIdx,
+            startWeekIdx + 4,
+          );
+          const totalMonths = Math.ceil(generatedEventPlan.weeks.length / 4);
+
+          label.innerText = `Month ${currentCalIndex + 1} of ${totalMonths} (Weeks ${startWeekIdx + 1} - ${startWeekIdx + monthWeeks.length})`;
+          badge.innerText = `Phase: ${monthWeeks[0]?.phase || "Training"}`;
+
+          container.innerHTML = `
+            <div class="space-y-2">
+                <!-- Day Headers -->
+                <div class="grid grid-cols-7 text-center text-[10px] font-bold text-slate-500 pb-1">
+                    <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                </div>
+                <!-- 4 Week Rows -->
+                ${monthWeeks
+                  .map(
+                    (w) => `
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between text-[10px] text-slate-400 px-1">
+                            <span class="font-semibold text-slate-300">W${w.weekNumber} (${w.phase})</span>
+                            <span>${w.totalKm} km</span>
+                        </div>
+                        <div class="grid grid-cols-7 gap-1.5">
+                            ${w.days
+                              .map((d) => {
+                                const style =
+                                  WORKOUT_COLORS[d.type] ||
+                                  WORKOUT_COLORS["Rest"];
+                                return `
+                                    <div class="p-1.5 rounded-lg border ${style.border} ${style.bg} text-center min-h-[46px] flex flex-col justify-center">
+                                        <span class="text-[8px] font-bold ${style.text} truncate">${d.type}</span>
+                                        <span class="text-[11px] font-bold text-white">${d.type === "Rest" ? "—" : `${d.km}k`}</span>
+                                    </div>
+                                `;
+                              })
+                              .join("")}
+                        </div>
+                    </div>
+                `,
+                  )
+                  .join("")}
+            </div>
+        `;
+        }
       }
     </script>
 
