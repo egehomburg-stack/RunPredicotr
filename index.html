@@ -456,20 +456,33 @@
 
             <!-- Temperature -->
             <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700">
-              <label class="block text-slate-400 font-medium text-sm mb-2"
-                >Temperature (°C)<span
-                  onclick="showInfo('temp')"
-                  class="text-[11px] text-slate-500 font-normal ml-2 italic cursor-pointer hover:underline hover:text-blue-400 transition-colors"
-                  >(Ideal: 3.8-9.9 °C)</span
-                ></label
-              >
+              <!-- Header: Label on Left, Weather Icon on Right -->
+              <div class="flex items-center justify-between mb-2">
+                <label
+                  class="text-slate-400 font-medium text-sm flex items-center"
+                >
+                  Temperature (°C)
+                  <span
+                    onclick="showInfo('temp')"
+                    class="text-[11px] text-slate-500 font-normal ml-2 italic cursor-pointer hover:underline hover:text-slate-400"
+                    >(Ideal: 3.8-9.9 °C)</span
+                  >
+                </label>
+
+                <!-- Weather Icon -->
+                <div
+                  id="weatherConditionIcon"
+                  class="flex items-center justify-center"
+                ></div>
+              </div>
+
               <input
                 type="number"
                 id="temperature"
                 data-save="temperature"
                 value="20"
                 step="1"
-                class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+                class="w-full bg-slate-700 text-blue-400 font-bold p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500"
                 oninput="runPredictor()"
               />
             </div>
@@ -907,7 +920,7 @@
 
         <!-- Prepare Tab -->
         <button
-          onclick="showPage('preparePage')"
+          onclick="openPrepareModal()"
           class="flex-1 flex flex-col items-center justify-center gap-1 text-slate-400 transition-colors"
         >
           <svg
@@ -1046,7 +1059,7 @@
         const params = new URLSearchParams({
           latitude: location.latitude,
           longitude: location.longitude,
-          current: "temperature_2m",
+          current: "temperature_2m,weather_code",
           hourly: "temperature_2m",
           forecast_days: "1",
           timezone: "auto",
@@ -1068,6 +1081,15 @@
           const unit = weatherData.current_units.temperature_2m;
 
           const temperatureInput = document.getElementById("temperature");
+
+          // 1. Get the weather code
+          const weatherCode = weatherData.current?.weather_code ?? 0;
+
+          // 2. Inject the SVG icon
+          const iconContainer = document.getElementById("weatherConditionIcon");
+          if (iconContainer && typeof getWeatherIconSvg === "function") {
+            iconContainer.innerHTML = getWeatherIconSvg(weatherCode);
+          }
 
           if (temperatureInput) {
             temperatureInput.value = Math.round(temperature);
@@ -1096,6 +1118,58 @@
         } catch (error) {
           console.error("Weather error:", error);
         }
+      }
+
+      function getWeatherIconSvg(wmoCode) {
+        // 0: Clear sky
+        if (wmoCode === 0) {
+          return `<svg class="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+        </svg>`;
+        }
+        // 1, 2, 3: Mainly clear, partly cloudy, overcast
+        if (wmoCode >= 1 && wmoCode <= 3) {
+          return `<svg class="w-5 h-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+        </svg>`;
+        }
+        // 45, 48: Fog
+        if (wmoCode === 45 || wmoCode === 48) {
+          return `<svg class="w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M3 16h18M7 20h10M4 8h16"></path>
+        </svg>`;
+        }
+        // 51-67, 80-82: Drizzle & Rain
+        if (
+          (wmoCode >= 51 && wmoCode <= 67) ||
+          (wmoCode >= 80 && wmoCode <= 82)
+        ) {
+          return `<svg class="w-5 h-5 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path>
+            <path d="M16 14v6M8 14v6M12 16v6"></path>
+        </svg>`;
+        }
+        // 71-77, 85-86: Snow
+        if (
+          (wmoCode >= 71 && wmoCode <= 77) ||
+          wmoCode === 85 ||
+          wmoCode === 86
+        ) {
+          return `<svg class="w-5 h-5 text-cyan-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"></path>
+        </svg>`;
+        }
+        // 95-99: Thunderstorm
+        if (wmoCode >= 95) {
+          return `<svg class="w-5 h-5 text-yellow-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"></path>
+            <polyline points="13 11 9 17 15 17 11 23"></polyline>
+        </svg>`;
+        }
+
+        // Default: Sunny
+        return `<svg class="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle></svg>`;
       }
 
       function startWeatherUpdates(location) {
@@ -1339,6 +1413,40 @@
         document.getElementById("onboarding").classList.remove("hidden");
       }
 
+      function getSafelyIdealCaloriesNow() {
+        let dailyTarget = 2500;
+
+        if (typeof idealCal !== "undefined" && !isNaN(Number(idealCal))) {
+          dailyTarget = Number(idealCal);
+        } else {
+          const stored = localStorage.getItem("userIdealCal");
+          if (stored && !isNaN(Number(stored))) {
+            dailyTarget = Number(stored);
+          }
+        }
+
+        const now = new Date();
+        const currentHour = now.getHours() + now.getMinutes() / 60;
+        const startHour = 7;
+        const endHour = 22;
+
+        if (currentHour < startHour) {
+          return Math.round(dailyTarget * 0.05);
+        } else if (currentHour >= endHour) {
+          return Math.round(dailyTarget);
+        } else {
+          const progress = (currentHour - startHour) / (endHour - startHour);
+          return Math.round(dailyTarget * progress);
+        }
+      }
+
+      setInterval(() => {
+        const hintEl = document.getElementById("idealCalHint");
+        if (hintEl) {
+          hintEl.innerText = `(Ideal: ${getSafelyIdealCaloriesNow()} kcal)`;
+        }
+      }, 60 * 1000);
+
       // 3. Main Calculation Logic
       function runPredictor() {
         if (!profile) return;
@@ -1422,7 +1530,7 @@
         idealCal = bmr * 1.5 + profile.weight * dist;
         localStorage.setItem("userIdealCal", idealCal);
         document.getElementById("idealCalHint").innerText =
-          `(Ideal: ${Math.round(idealCal)} kcal)`;
+          `(Ideal by now: ${getSafelyIdealCaloriesNow()} kcal)`;
         updateEatUI();
 
         // Ideal Hydration Formula
@@ -1483,72 +1591,81 @@
           if (typeof updateEatUI === "function") updateEatUI();
         }
 
-        // Scoring Logic
-        // Baseline Performance starts at 1.0 (100%)
+        // Physiological Scoring Model (Multiplicative Stressors)
         let multiplier = 1.0;
 
-        // Sleep Multiplier (Ideal 8.5h - 9.5h)
+        // 1. Sleep: Cognitive & Neuromuscular readiness (Optimal: 8.0h - 9.0h)
         let sleepFactor = 1.0;
-        if (sleep < 8.5) {
-          // Lose roughly 5% for every hour of sleep missing
-          sleepFactor = 1.0 - (8.5 - sleep) * 0.05;
+        if (sleep < 8.0) {
+          // Lose ~6% per missing hour of sleep
+          sleepFactor = 1.0 - (8.0 - sleep) * 0.06;
         } else if (sleep > 9.5) {
-          // Too much sleep also makes you groggy
-          sleepFactor = 1.0 - (sleep - 9.5) * 0.02;
+          // Oversleeping grogginess
+          sleepFactor = 1.0 - (sleep - 9.5) * 0.03;
         }
-        multiplier *= Math.max(0.6, sleepFactor); // Can't lose more than 40% from sleep
+        multiplier *= Math.max(0.5, sleepFactor);
 
-        // Temperature Multiplier (Ideal 12°C - 20°C)
+        // 2. Temperature: Cardiovascular Drift & Thermoregulation (Optimal: 10°C - 15°C)
         let tempFactor = 1.0;
-        if (temp > 9.9) {
-          // Heat is dangerous! Lose 2% for every degree over 20
-          tempFactor = 1.0 - (temp - 9.9) * 0.025;
-        } else if (temp < 3.8) {
-          // Cold is easier, lose 1% for every degree under 12
-          tempFactor = 1.0 - (3.8 - temp) * 0.015;
+        if (temp > 15) {
+          // Thermal strain: ~1.5% performance drop per °C over 15°C
+          tempFactor = 1.0 - (temp - 15) * 0.015;
+        } else if (temp < 5) {
+          // Cold stiffness: ~1.2% drop per °C below 5°C
+          tempFactor = 1.0 - (5 - temp) * 0.012;
         }
-        multiplier *= Math.max(0.4, tempFactor);
+        multiplier *= Math.max(0.5, tempFactor);
 
-        // Calories Multiplier (Fuel Factor)
-        // We compare what you ate to your ideal BMR
-        let calRatio = cal / idealCal;
+        // 3. Calories: Glycogen availability relative to time of day
+        const currentCalTarget = Math.max(100, getSafelyIdealCaloriesNow());
+        const calRatio = cal / currentCalTarget;
         let calFactor = 1.0;
 
-        if (calRatio < 0.8) {
-          // Under-fueled: Lose 5% for every 10% you are under the 80% mark
-          calFactor = 1.0 - (0.8 - calRatio) * 0.5;
-        } else if (calRatio > 1.2) {
-          // Over-fueled: Too full! Lose 2% for every 10% you are over the 120% mark
-          calFactor = 1.0 - (calRatio - 1.2) * 0.2;
+        if (calRatio < 0.85) {
+          // Glycogen depletion penalty
+          calFactor = 1.0 - (0.85 - calRatio) * 0.6;
+        } else if (calRatio > 1.25) {
+          // Digestion distress / fullness penalty
+          calFactor = 1.0 - (calRatio - 1.25) * 0.3;
         }
+        multiplier *= Math.max(0.55, calFactor);
 
-        // Floor it at 0.6 (Even hungry, you can run, but it'll be slow)
-        multiplier *= Math.max(0.6, calFactor);
+        // 4. Hydration: Plasma volume & cardiac output
+        const currentWaterTarget =
+          typeof getSafelyIdealWater === "function"
+            ? getSafelyIdealWater()
+            : idealWater || 2.5;
+        const noww = new Date();
+        const timeProgress = Math.min(
+          1.0,
+          Math.max(0.1, (noww.getHours() - 7) / 15),
+        );
+        const expectedWaterNow = currentWaterTarget * timeProgress;
+        const hydrationDeficit = expectedWaterNow - water;
 
-        // Hydration Multiplier (Penalty if under-hydrated)
         let hydrationFactor = 1.0;
-        const hydrationDeficit = idealWater - water;
-
         if (hydrationDeficit > 0) {
-          // Lose 10% performance for every Liter missing
-          hydrationFactor = 1.0 - hydrationDeficit * 0.1;
+          // Plasma volume drop: ~12% penalty per 1L missing
+          hydrationFactor = 1.0 - hydrationDeficit * 0.12;
         }
+        multiplier *= Math.max(0.5, hydrationFactor);
 
-        // Don't let the factor go below 0.5 (50% performance)
-        hydrationFactor = Math.max(0.5, hydrationFactor);
-        multiplier *= hydrationFactor;
-
-        // Altitude Multiplier (Penalty kicks in above 1500m)
+        // 5. Altitude: Hypobaric Hypoxia (VO2max drops ~1% per 100m above 1000m)
         let altFactor = 1.0;
-        if (alt > 1500) {
-          altFactor = 1.0 - ((alt - 1500) / 100) * 0.015; // 1.5% drop per 100m
+        if (alt > 1000) {
+          altFactor = 1.0 - ((alt - 1000) / 100) * 0.01;
         }
-        multiplier *= Math.max(0.6, altFactor);
+        multiplier *= Math.max(0.55, altFactor);
 
-        let stretchMultiplier = stretched ? 1.05 : 1.0;
+        // 6. Readiness / Warmup modifier (Realistic 1% boost instead of 5%)
+        let stretchMultiplier = stretched ? 1.01 : 1.0;
         multiplier *= stretchMultiplier;
 
-        let finalScore = Math.round(multiplier * 100);
+        // Final Predicted Quality Score (Multiplicative)
+        let finalScore = Math.max(
+          20,
+          Math.min(100, Math.round(multiplier * 100)),
+        );
         document.getElementById("qualityText").innerText = finalScore + "%";
 
         updateChart(sleep, temp, cal, idealCal, water, idealWater, alt);
@@ -1605,25 +1722,26 @@
         }
 
         let calP;
-        const calDiff = Math.abs(cal - idealCal);
-        if (calDiff < 100) {
-          calP = 100;
-        } else if (calDiff < 300) {
-          calP = 90;
-        } else if (calDiff < 500) {
-          calP = 80;
-        } else if (calDiff < 700) {
-          calP = 70;
-        } else if (calDiff < 900) {
-          calP = 60;
-        } else if (calDiff < 1100) {
-          calP = 50;
-        } else if (calDiff < 1300) {
-          calP = 40;
-        } else if (calDiff < 1500) {
-          calP = 30;
+        const currentIdealCal = Math.max(100, getSafelyIdealCaloriesNow()); // Floor at 100 to avoid division by zero early morning
+        const calDiff = Math.abs(cal - currentIdealCal);
+        const pctDiff = (calDiff / currentIdealCal) * 100; // Percentage error relative to current target
+
+        if (pctDiff <= 10) {
+          calP = 100; // Within ±10% of ideal -> Perfect
+        } else if (pctDiff <= 20) {
+          calP = 90; // Within ±20% -> Great
+        } else if (pctDiff <= 30) {
+          calP = 80; // Within ±30% -> Good
+        } else if (pctDiff <= 40) {
+          calP = 70; // Within ±40% -> Fair
+        } else if (pctDiff <= 55) {
+          calP = 60; // Within ±55% -> Mediocre
+        } else if (pctDiff <= 70) {
+          calP = 50; // Within ±70% -> Poor
+        } else if (pctDiff <= 85) {
+          calP = 40; // Within ±85% -> Bad
         } else {
-          calP = 20;
+          calP = 20; // Off by >85% (e.g. 10 kcal vs 500 kcal target) -> Very Bad / Red
         }
 
         let waterP;
@@ -3061,6 +3179,337 @@
       </div>
     </div>
 
+    <!-- Prepare Master Modal -->
+    <div
+      id="prepareModal"
+      class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+    >
+      <div
+        class="relative w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto"
+      >
+        <!-- Modal Header -->
+        <div
+          class="flex items-center justify-between pb-4 border-b border-slate-800"
+        >
+          <div>
+            <h3 id="prepareModalTitle" class="text-xl font-bold text-white">
+              Prepare
+            </h3>
+            <p id="prepareModalSubtitle" class="text-xs text-slate-400">
+              Optimize upcoming runs & race goals
+            </p>
+          </div>
+          <button
+            onclick="closePrepareModal()"
+            class="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- VIEW 1: Main Selector Menu (Matches Zone Menu UI) -->
+        <div id="prepareMenuView" class="space-y-3 mt-6">
+          <button
+            onclick="switchPrepareView('run')"
+            class="w-full text-left p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-blue-500/50 transition flex items-center justify-between group"
+          >
+            <div>
+              <h4 class="font-semibold text-blue-400 group-hover:text-blue-300">
+                Prepare for a Run
+              </h4>
+              <p class="text-xs text-slate-400 mt-0.5">
+                Pre-run hydration, carb intake & weather-based timing
+              </p>
+            </div>
+            <svg
+              class="w-5 h-5 text-slate-500 group-hover:text-blue-400 transition"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              ></path>
+            </svg>
+          </button>
+
+          <button
+            onclick="switchPrepareView('event')"
+            class="w-full text-left p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-purple-500/50 transition flex items-center justify-between group"
+          >
+            <div>
+              <h4
+                class="font-semibold text-purple-400 group-hover:text-purple-300"
+              >
+                Prepare for an Event
+              </h4>
+              <p class="text-xs text-slate-400 mt-0.5">
+                Riegel race predictor, phased mileage & custom schedule
+              </p>
+            </div>
+            <svg
+              class="w-5 h-5 text-slate-500 group-hover:text-purple-400 transition"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- VIEW 2: Prepare for a Run -->
+        <div id="prepareRunView" class="hidden space-y-4 mt-5">
+          <button
+            onclick="switchPrepareView('menu')"
+            class="text-xs text-slate-400 hover:text-white flex items-center gap-1 mb-2"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              ></path>
+            </svg>
+            Back to options
+          </button>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs text-slate-400 font-medium"
+                >Planned Run Time</label
+              >
+              <input
+                type="time"
+                id="runPlanTime"
+                class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-sm outline-none focus:border-blue-500"
+                value="18:00"
+              />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 font-medium"
+                >Duration (minutes)</label
+              >
+              <input
+                type="number"
+                id="runPlanDuration"
+                class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-sm outline-none focus:border-blue-500"
+                value="45"
+                min="10"
+                step="5"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs text-slate-400 font-medium"
+              >Target Intensity</label
+            >
+            <div class="grid grid-cols-3 gap-2 mt-1.5">
+              <button
+                type="button"
+                onclick="selectRunIntensity('easy')"
+                id="btnInt-easy"
+                class="intensity-btn py-2 rounded-xl text-xs font-semibold bg-slate-800 border border-slate-700 text-slate-300"
+              >
+                Easy (Z2)
+              </button>
+              <button
+                type="button"
+                onclick="selectRunIntensity('moderate')"
+                id="btnInt-moderate"
+                class="intensity-btn py-2 rounded-xl text-xs font-semibold bg-blue-600 border border-blue-500 text-white"
+              >
+                Moderate (Z3)
+              </button>
+              <button
+                type="button"
+                onclick="selectRunIntensity('hard')"
+                id="btnInt-hard"
+                class="intensity-btn py-2 rounded-xl text-xs font-semibold bg-slate-800 border border-slate-700 text-slate-300"
+              >
+                Strong / Hard (Z4+)
+              </button>
+            </div>
+          </div>
+
+          <button
+            onclick="calculateRunPreparation()"
+            class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold text-sm shadow-lg shadow-blue-500/20 transition"
+          >
+            Generate Pre-Run Plan
+          </button>
+
+          <!-- Pre-Run Results Box -->
+          <div
+            id="runPlanResult"
+            class="hidden mt-4 p-4 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-3 text-xs"
+          ></div>
+        </div>
+
+        <!-- VIEW 3: Prepare for an Event -->
+        <div id="prepareEventView" class="hidden space-y-4 mt-5">
+          <button
+            onclick="switchPrepareView('menu')"
+            class="text-xs text-slate-400 hover:text-white flex items-center gap-1 mb-2"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              ></path>
+            </svg>
+            Back to options
+          </button>
+
+          <!-- Baseline Form -->
+          <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-slate-400"
+                  >Recent Benchmark Distance</label
+                >
+                <select
+                  id="eventBaseDist"
+                  class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
+                >
+                  <option value="5">5 km</option>
+                  <option value="10" selected>10 km</option>
+                  <option value="21.0975">Half Marathon (21.1k)</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs text-slate-400"
+                  >Benchmark Time (hh:mm or mm:ss)</label
+                >
+                <input
+                  type="text"
+                  id="eventBaseTime"
+                  placeholder="e.g. 52:00"
+                  class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
+                  value="50:00"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label class="text-xs text-slate-400">Longest Run (km)</label>
+                <input
+                  type="number"
+                  id="eventLongestRun"
+                  value="12"
+                  class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
+                />
+              </div>
+              <div>
+                <label class="text-xs text-slate-400">Current km / wk</label>
+                <input
+                  type="number"
+                  id="eventCurrentWeeklyKm"
+                  value="25"
+                  class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
+                />
+              </div>
+              <div>
+                <label class="text-xs text-slate-400">Runs / week</label>
+                <select
+                  id="eventRunsPerWeek"
+                  class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
+                >
+                  <option value="3">3 runs</option>
+                  <option value="4" selected>4 runs</option>
+                  <option value="5">5 runs</option>
+                  <option value="6">6 runs</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800">
+              <div>
+                <label class="text-xs text-slate-400">Target Goal</label>
+                <select
+                  id="eventGoalDistance"
+                  class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
+                >
+                  <option value="10">10 km</option>
+                  <option value="21.0975">Half Marathon</option>
+                  <option value="42.195" selected>Marathon</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs text-slate-400">Goal Time (h:mm)</label>
+                <input
+                  type="text"
+                  id="eventGoalTime"
+                  placeholder="3:45"
+                  class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
+                  value="3:45"
+                />
+              </div>
+              <div>
+                <label class="text-xs text-slate-400">Prep Weeks</label>
+                <input
+                  type="number"
+                  id="eventTotalWeeks"
+                  value="16"
+                  min="6"
+                  max="52"
+                  class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          <button
+            onclick="calculateEventPlan()"
+            class="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white font-bold text-sm shadow-lg shadow-purple-500/20 transition"
+          >
+            Calculate Training Blueprint
+          </button>
+
+          <!-- Event Plan Result Box -->
+          <div
+            id="eventPlanResult"
+            class="hidden mt-4 p-4 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-4 text-xs"
+          ></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Compact Eat Modal -->
     <div
       id="eatModal"
@@ -3848,6 +4297,289 @@
       window.showZoneView = showZoneView;
       window.calculateAndDisplayZones = calculateAndDisplayZones;
       window.saveManualZones = saveManualZones;
+
+      // --- PREPARE MODAL CONTROLLERS ---
+      let selectedRunIntensity = "moderate";
+
+      function openPrepareModal() {
+        const modal = document.getElementById("prepareModal");
+        if (modal) {
+          modal.classList.remove("hidden");
+          switchPrepareView("menu");
+        }
+      }
+
+      function closePrepareModal() {
+        const modal = document.getElementById("prepareModal");
+        if (modal) modal.classList.add("hidden");
+      }
+
+      function switchPrepareView(view) {
+        const menu = document.getElementById("prepareMenuView");
+        const run = document.getElementById("prepareRunView");
+        const event = document.getElementById("prepareEventView");
+        const title = document.getElementById("prepareModalTitle");
+        const subtitle = document.getElementById("prepareModalSubtitle");
+
+        menu.classList.add("hidden");
+        run.classList.add("hidden");
+        event.classList.add("hidden");
+
+        if (view === "menu") {
+          title.innerText = "Prepare";
+          subtitle.innerText = "Optimize upcoming runs & race goals";
+          menu.classList.remove("hidden");
+        } else if (view === "run") {
+          title.innerText = "Prepare for a Run";
+          subtitle.innerText = "Hydration, nutrition & weather readiness";
+          run.classList.remove("hidden");
+        } else if (view === "event") {
+          title.innerText = "Prepare for an Event";
+          subtitle.innerText = "Riegel race predictor & phased mileage plan";
+          event.classList.remove("hidden");
+        }
+      }
+
+      function selectRunIntensity(intensity) {
+        selectedRunIntensity = intensity;
+        ["easy", "moderate", "hard"].forEach((lvl) => {
+          const btn = document.getElementById(`btnInt-${lvl}`);
+          if (lvl === intensity) {
+            btn.className =
+              "intensity-btn py-2 rounded-xl text-xs font-semibold bg-blue-600 border border-blue-500 text-white";
+          } else {
+            btn.className =
+              "intensity-btn py-2 rounded-xl text-xs font-semibold bg-slate-800 border border-slate-700 text-slate-300";
+          }
+        });
+      }
+
+      // Helper: Parse hh:mm:ss or mm:ss into seconds
+      function timeStringToSeconds(str) {
+        const parts = str.trim().split(":").map(Number);
+        if (parts.length === 3)
+          return parts[0] * 3600 + parts[1] * 60 + parts[2];
+        if (parts.length === 2) return parts[0] * 60 + parts[1];
+        return Number(str) * 60 || 0;
+      }
+
+      // Helper: Format seconds into h:mm:ss
+      function formatSecondsToTime(sec) {
+        const h = Math.floor(sec / 3600);
+        const m = Math.floor((sec % 3600) / 60);
+        const s = Math.round(sec % 60);
+        if (h > 0) return `${h}h ${m.toString().padStart(2, "0")}m`;
+        return `${m}m ${s.toString().padStart(2, "0")}s`;
+      }
+
+      // --- 1. PREPARE FOR A RUN CALCULATION ---
+      function calculateRunPreparation() {
+        const runTimeVal = document.getElementById("runPlanTime").value; // "15:00"
+        const duration =
+          parseFloat(document.getElementById("runPlanDuration").value) || 45;
+        const currentTemp =
+          parseFloat(document.getElementById("temperature")?.value) || 20;
+
+        // Parse target hour
+        const [targetHour, targetMin] = runTimeVal.split(":").map(Number);
+
+        // Ideal vs Current difference
+        const now = new Date();
+        const currentHourFloat = now.getHours() + now.getMinutes() / 60;
+
+        // Ideal daily benchmarks (assume standard 2.5L and 2200 kcal daily base, or your app's formula)
+        const idealHydrationByRunTime = Math.min(
+          2.8,
+          +(1.2 + (targetHour / 24) * 1.6).toFixed(2),
+        );
+        const idealCalByRunTime = Math.round((targetHour / 24) * 2300);
+
+        const currentWater =
+          parseFloat(document.getElementById("hydration")?.value) || 0;
+        const currentCalories =
+          parseFloat(document.getElementById("calories")?.value) || 0;
+
+        const waterDeficit = Math.max(
+          0,
+          +(idealHydrationByRunTime - currentWater).toFixed(2),
+        );
+        const calDeficit = Math.max(
+          0,
+          Math.round(idealCalByRunTime - currentCalories),
+        );
+
+        // Workout burn estimation (kcal & sweat)
+        let intensityFactor =
+          selectedRunIntensity === "easy"
+            ? 0.85
+            : selectedRunIntensity === "moderate"
+              ? 1.0
+              : 1.25;
+        const estBurn = Math.round((duration / 60) * 650 * intensityFactor);
+
+        // Sweat rate adjustment with temperature (Base 0.6 L/hr + temp impact)
+        const sweatRateLitrePerHour =
+          (0.6 + Math.max(0, (currentTemp - 15) * 0.035)) * intensityFactor;
+        const estSweatLoss = +(sweatRateLitrePerHour * (duration / 60)).toFixed(
+          2,
+        );
+
+        // Meal timing (e.g. 3 hours before)
+        let mealHour = targetHour - 3;
+        let mealTimeStr =
+          (mealHour < 0 ? mealHour + 24 : mealHour) +
+          `:${targetMin.toString().padStart(2, "0")}`;
+        let snackTimeStr =
+          (targetHour === 0 ? 23 : targetHour - 1) +
+          `:${(targetMin >= 30 ? targetMin - 30 : targetMin + 30).toString().padStart(2, "0")}`;
+
+        const resultBox = document.getElementById("runPlanResult");
+        resultBox.innerHTML = `
+        <div class="border-b border-slate-700 pb-2">
+            <span class="text-xs uppercase font-bold text-blue-400">Pre-Run Checklist (Target: ${runTimeVal})</span>
+            <p class="text-slate-300 mt-1">Estimated workout burn: <b class="text-white">${estBurn} kcal</b> | Est. fluid loss: <b class="text-blue-300">${estSweatLoss} L</b> (at ${currentTemp}°C).</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-slate-300">
+            <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                <p class="text-[11px] text-slate-400">💧 Hydration Needed Before</p>
+                <p class="text-base font-bold text-blue-400 mt-0.5">+${waterDeficit + 0.3 > 0 ? (waterDeficit + 0.3).toFixed(2) : 0.3} L</p>
+                <p class="text-[10px] text-slate-500">Includes 300ml pre-load 30m prior.</p>
+            </div>
+            <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                <p class="text-[11px] text-slate-400">⚡ Energy Intake Needed</p>
+                <p class="text-base font-bold text-amber-400 mt-0.5">+${calDeficit > 0 ? calDeficit : 250} kcal</p>
+                <p class="text-[10px] text-slate-500">To top up glycogen reserves.</p>
+            </div>
+        </div>
+
+        <div class="space-y-1.5 pt-1 text-slate-300">
+            <p>🍽️ <b class="text-white">Main Meal at ~${mealTimeStr}:</b> High carb, moderate protein, low fat & fiber (e.g. rice bowl, oats with banana, or pasta).</p>
+            ${selectedRunIntensity === "hard" ? `<p>🍌 <b class="text-amber-300">Light Snack at ~${snackTimeStr}:</b> Quick simple carbs (energy gel, banana, toast with jam).</p>` : ""}
+        </div>
+    `;
+        resultBox.classList.remove("hidden");
+      }
+
+      // --- 2. PREPARE FOR AN EVENT CALCULATION ---
+      function calculateEventPlan() {
+        const d1 = parseFloat(document.getElementById("eventBaseDist").value);
+        const t1Sec = timeStringToSeconds(
+          document.getElementById("eventBaseTime").value,
+        );
+        const longestRun =
+          parseFloat(document.getElementById("eventLongestRun").value) || 10;
+        const currentWeeklyKm =
+          parseFloat(document.getElementById("eventCurrentWeeklyKm").value) ||
+          20;
+        const runsPerWeek =
+          parseInt(document.getElementById("eventRunsPerWeek").value) || 4;
+        const d2 = parseFloat(
+          document.getElementById("eventGoalDistance").value,
+        );
+        const goalSec = timeStringToSeconds(
+          document.getElementById("eventGoalTime").value,
+        );
+        const totalWeeks =
+          parseInt(document.getElementById("eventTotalWeeks").value) || 16;
+
+        if (!t1Sec || !goalSec) {
+          alert("Please enter valid times (e.g. 50:00 or 3:45)");
+          return;
+        }
+
+        // 1. Riegel Predicted Potential Time: T2 = T1 * (D2 / D1)^1.06
+        const riegelSec = t1Sec * Math.pow(d2 / d1, 1.06);
+
+        // 2. Gap to Goal
+        const gapPercent = ((1 - goalSec / riegelSec) * 100).toFixed(1);
+
+        // 3. Phased Breakdown (Base 40%, Build 35%, Peak 15%, Taper 10%)
+        const baseWeeks = Math.round(totalWeeks * 0.4);
+        const buildWeeks = Math.round(totalWeeks * 0.35);
+        const peakWeeks = Math.round(totalWeeks * 0.15);
+        const taperWeeks = Math.max(
+          1,
+          totalWeeks - baseWeeks - buildWeeks - peakWeeks,
+        );
+
+        // 4. Workout Structure Generator based on runs per week
+        let weeklyStructure = [];
+        if (runsPerWeek === 3)
+          weeklyStructure = [
+            "1x Easy (Z2)",
+            "1x Quality / Intervals",
+            "1x Long Run",
+          ];
+        else if (runsPerWeek === 4)
+          weeklyStructure = [
+            "1x Easy",
+            "1x Threshold / Intervals",
+            "1x Easy (Recovery)",
+            "1x Long Run",
+          ];
+        else if (runsPerWeek === 5)
+          weeklyStructure = [
+            "1x Easy",
+            "1x Intervals",
+            "1x Easy",
+            "1x Tempo",
+            "1x Long Run",
+          ];
+        else if (runsPerWeek === 6)
+          weeklyStructure = [
+            "1x Easy",
+            "1x Intervals",
+            "1x Easy",
+            "1x Tempo",
+            "1x Recovery",
+            "1x Long Run",
+          ];
+
+        const peakTargetMileage = Math.min(
+          Math.round(currentWeeklyKm * 1.6),
+          d2 >= 42 ? 65 : 45,
+        );
+
+        const resultBox = document.getElementById("eventPlanResult");
+        resultBox.innerHTML = `
+        <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-700">
+            <h5 class="text-xs font-bold text-purple-400 uppercase">Performance Analysis (Riegel Formula)</h5>
+            <p class="mt-1 text-slate-300">Estimated potential based on baseline: <b class="text-white">${formatSecondsToTime(riegelSec)}</b></p>
+            <p class="text-slate-400">Target: <b class="text-white">${formatSecondsToTime(goalSec)}</b> (${gapPercent > 0 ? `${gapPercent}% faster than current base` : `Within comfortable range`})</p>
+        </div>
+
+        <div>
+            <h5 class="text-xs font-bold text-white mb-2">Phased Roadmap (${totalWeeks} Weeks)</h5>
+            <div class="grid grid-cols-2 gap-2 text-[11px]">
+                <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
+                    <span class="text-blue-400 font-bold">Phase 1: Base (${baseWeeks} wks)</span>
+                    <p class="text-slate-400 mt-0.5">Build aerobic volume, 80%+ Easy (Z2). Gradual volume rise.</p>
+                </div>
+                <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
+                    <span class="text-amber-400 font-bold">Phase 2: Build (${buildWeeks} wks)</span>
+                    <p class="text-slate-400 mt-0.5">Introduce Threshold & Marathon pace tempos.</p>
+                </div>
+                <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
+                    <span class="text-rose-400 font-bold">Phase 3: Peak (${peakWeeks} wks)</span>
+                    <p class="text-slate-400 mt-0.5">Peak weekly volume (~${peakTargetMileage} km) & longest run (~${Math.min(32, Math.round(longestRun * 1.8))} km).</p>
+                </div>
+                <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
+                    <span class="text-emerald-400 font-bold">Phase 4: Taper (${taperWeeks} wks)</span>
+                    <p class="text-slate-400 mt-0.5">Reduce volume 30-50%, maintain sharpness & recover.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-2 border-t border-slate-800">
+            <h5 class="text-xs font-bold text-white mb-1">Weekly Workout Split (${runsPerWeek} days/wk)</h5>
+            <div class="flex flex-wrap gap-1.5 mt-1">
+                ${weeklyStructure.map((w) => `<span class="px-2 py-1 bg-slate-900 border border-slate-700 rounded-md text-[10px] text-slate-300 font-medium">${w}</span>`).join("")}
+            </div>
+        </div>
+    `;
+        resultBox.classList.remove("hidden");
+      }
     </script>
 
     <!-- Heart Rate Zones Modal -->
@@ -4066,7 +4798,7 @@
             >
               <div>
                 <div class="font-bold text-sm text-slate-200">
-                  Zone 1 • Active Recovery
+                  Zone 1 • Recovery
                 </div>
                 <div class="text-xs text-slate-400">Easy recovery pace</div>
               </div>
@@ -4080,7 +4812,7 @@
             >
               <div>
                 <div class="font-bold text-sm text-blue-300">
-                  Zone 2 • Aerobic / Base
+                  Zone 2 • Aerobic
                 </div>
                 <div class="text-xs text-slate-400">
                   Fat burning & endurance
@@ -4125,9 +4857,7 @@
               class="bg-[#1e293b]/70 border-l-4 border-rose-500 rounded-xl p-3 flex justify-between items-center"
             >
               <div>
-                <div class="font-bold text-sm text-rose-300">
-                  Zone 5 • Super-Threshold / Max
-                </div>
+                <div class="font-bold text-sm text-rose-300">Zone 5 • Max</div>
                 <div class="text-xs text-slate-400">Peak power & speed</div>
               </div>
               <div id="z5Val" class="text-base font-black text-white">
