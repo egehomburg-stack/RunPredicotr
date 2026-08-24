@@ -1060,7 +1060,7 @@
           latitude: location.latitude,
           longitude: location.longitude,
           current: "temperature_2m,weather_code",
-          hourly: "temperature_2m",
+          hourly: "temperature_2m,weather_code",
           forecast_days: "1",
           timezone: "auto",
         });
@@ -1075,6 +1075,7 @@
           }
 
           const weatherData = await response.json();
+          window.lastFetchedWeather = weatherData;
 
           const temperature = weatherData.current.temperature_2m;
 
@@ -3485,6 +3486,98 @@
                 </select>
               </div>
             </div>
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800">
+              <!-- Start Date Selection -->
+              <div class="mt-6">
+                <label
+                  class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                  >1. Starting Date</label
+                >
+                <input
+                  type="date"
+                  id="planStartDate"
+                  class="w-full bg-slate-900/50 border border-slate-700 text-white text-sm rounded-xl p-3 mt-2 focus:border-purple-500 outline-none transition-all"
+                />
+              </div>
+
+              <!-- Training Days Selection -->
+              <div class="mt-6">
+                <div class="flex justify-between items-center">
+                  <label
+                    class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                    >2. Training Days</label
+                  >
+                  <span
+                    id="dayCounter"
+                    class="text-[10px] text-purple-400 font-medium"
+                    >0 / 4 selected</span
+                  >
+                </div>
+
+                <div
+                  class="grid grid-cols-7 gap-1 mt-2"
+                  id="trainingDaysContainer"
+                >
+                  <!-- We use hidden checkboxes with styled labels for a "button" look -->
+                  <label class="cursor-pointer">
+                    <input type="checkbox" value="1" class="hidden peer" />
+                    <div
+                      class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
+                    >
+                      M
+                    </div>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="checkbox" value="2" class="hidden peer" />
+                    <div
+                      class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
+                    >
+                      T
+                    </div>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="checkbox" value="3" class="hidden peer" />
+                    <div
+                      class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
+                    >
+                      W
+                    </div>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="checkbox" value="4" class="hidden peer" />
+                    <div
+                      class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
+                    >
+                      T
+                    </div>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="checkbox" value="5" class="hidden peer" />
+                    <div
+                      class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
+                    >
+                      F
+                    </div>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="checkbox" value="6" class="hidden peer" />
+                    <div
+                      class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
+                    >
+                      S
+                    </div>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="checkbox" value="0" class="hidden peer" />
+                    <div
+                      class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
+                    >
+                      S
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
 
             <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800">
               <div>
@@ -4527,6 +4620,38 @@
       }
 
       function calculateEventPlan() {
+        const runsInput = document.getElementById("eventRunsPerWeek");
+        const trainingDaysContainer = document.getElementById(
+          "trainingDaysContainer",
+        );
+        const startDateInput = document.getElementById("planStartDate");
+
+        const maxAllowed = parseInt(runsInput.value);
+        const checkedDays =
+          trainingDaysContainer.querySelectorAll("input:checked").length;
+        // 1. Get the raw date from the input
+        const inputDate = new Date(startDateInput.value);
+
+        // 2. Logic to find the Monday of that week
+        const day = inputDate.getDay(); // 0 (Sun) to 6 (Sat)
+        const diff = inputDate.getDate() - day + (day === 0 ? -6 : 1);
+        const snappedMonday = new Date(inputDate.setDate(diff));
+
+        // 3. Store the snapped Monday as your startDate
+        const startDate = snappedMonday.toISOString().split("T")[0];
+
+        // 2. Validation Checks
+        if (checkedDays !== maxAllowed) {
+          alert(
+            `Wait! You set ${maxAllowed} runs per week but only picked ${checkedDays} days.`,
+          );
+          return; // Stops the plan from being created
+        }
+
+        if (!startDate) {
+          alert("Please select a Start Date!");
+          return; // Stops the plan from being created
+        }
         const d1 = parseFloat(document.getElementById("eventBaseDist").value);
         const t1Sec = timeStringToSeconds(
           document.getElementById("eventBaseTime").value,
@@ -4586,6 +4711,7 @@
 
         // 2. Save Plan in State & LocalStorage
         generatedEventPlan = {
+          startDate,
           riegelSec,
           goalSec,
           gapPercent,
@@ -4665,13 +4791,30 @@
       // --- 1. PREPARE FOR A RUN CALCULATION ---
       function calculateRunPreparation() {
         const runTimeVal = document.getElementById("runPlanTime").value; // "15:00"
+
+        const hour = parseInt(runTimeVal.split(":")[0]); // e.g. 21
         const duration =
           parseFloat(document.getElementById("runPlanDuration").value) || 45;
         const currentTemp =
           parseFloat(document.getElementById("temperature")?.value) || 20;
 
+        const weather = window.lastFetchedWeather;
+
         // Parse target hour
         const [targetHour, targetMin] = runTimeVal.split(":").map(Number);
+        let runTemp = 20;
+        let runWeatherCode = 0;
+
+        // 2. Try to get real data from the global weather object
+        if (weather && weather.hourly) {
+          // Look up the specific temperature for that hour
+          runTemp = Math.round(weather.hourly.temperature_2m[hour]);
+          runWeatherCode = weather.hourly.weather_code[hour];
+        } else {
+          console.error(
+            "Weather data is missing! Make sure window.lastFetchedWeather is set in loadWeather().",
+          );
+        }
 
         // Ideal vs Current difference
         const now = new Date();
@@ -4707,7 +4850,7 @@
 
         // Sweat rate adjustment with temperature (Base 0.6 L/hr + temp impact)
         const sweatRateLitrePerHour =
-          (0.6 + Math.max(0, (currentTemp - 15) * 0.035)) * intensityFactor;
+          (0.6 + Math.max(0, (runTemp - 15) * 0.035)) * intensityFactor;
         const estSweatLoss = +(sweatRateLitrePerHour * (duration / 60)).toFixed(
           2,
         );
@@ -4741,31 +4884,44 @@
           (targetHour === 0 ? 23 : targetHour - 1) +
           `:${(targetMin >= 30 ? targetMin - 30 : targetMin + 30).toString().padStart(2, "0")}`;
 
+        const weatherCode = window.currentRunWeatherCode || 0;
+
         const resultBox = document.getElementById("runPlanResult");
         resultBox.innerHTML = `
-        <div class="border-b border-slate-700 pb-2">
-            <span class="text-xs uppercase font-bold text-blue-400">Pre-Run Checklist (Target: ${runTimeVal})</span>
-            <p class="text-slate-300 mt-1">Estimated workout burn: <b class="text-white">${estBurn} kcal</b> | Est. fluid loss: <b class="text-blue-300">${estSweatLoss} L</b> (at ${currentTemp}°C).</p>
-        </div>
+          <div class="border-b border-slate-700 pb-2 mb-2">
+          <div class="flex justify-between items-start">
+              <div>
+                  <span class="text-xs uppercase font-bold text-blue-400">Pre-Run Checklist (Target: ${runTimeVal})</span>
+                  <p class="text-slate-300 mt-1">
+                      Estimated workout burn: <b class="text-white">${estBurn} kcal</b> |
+                      Est. fluid loss: <b class="text-blue-300">${estSweatLoss} L</b>
+                      (at ${runTemp}°C).
+                  </p>
+              </div>
+              <div class="mt-1">
+                  ${getWeatherIconSvg(runWeatherCode)}
+              </div>
+          </div>
+      </div>
 
-        <div class="grid grid-cols-2 gap-2 text-slate-300">
-            <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
-                <p class="text-[11px] text-slate-400">💧 Hydration Needed Before</p>
-                <p class="text-base font-bold text-blue-400 mt-0.5">+${waterDeficit + 0.3 > 0 ? (waterDeficit + 0.3).toFixed(2) : 0.3} L</p>
-                <p class="text-[10px] text-slate-500">Includes 300ml pre-load 30m prior.</p>
-            </div>
-            <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
-                <p class="text-[11px] text-slate-400">⚡ Energy Intake Needed</p>
-                <p class="text-base font-bold text-amber-400 mt-0.5">+${calDeficit > 0 ? calDeficit : 250} kcal</p>
-                <p class="text-[10px] text-slate-500">To top up glycogen reserves.</p>
-            </div>
-        </div>
+          <div class="grid grid-cols-2 gap-2 text-slate-300">
+              <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                  <p class="text-[11px] text-slate-400">💧 Hydration Needed Before</p>
+                  <p class="text-base font-bold text-blue-400 mt-0.5">+${waterDeficit + 0.3 > 0 ? (waterDeficit + 0.3).toFixed(2) : 0.3} L</p>
+                  <p class="text-[10px] text-slate-500">Includes 300ml pre-load 30m prior.</p>
+              </div>
+              <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                  <p class="text-[11px] text-slate-400">⚡ Energy Intake Needed</p>
+                  <p class="text-base font-bold text-amber-400 mt-0.5">+${calDeficit > 0 ? calDeficit : 250} kcal</p>
+                  <p class="text-[10px] text-slate-500">To top up glycogen reserves.</p>
+              </div>
+          </div>
 
-        <div class="space-y-1.5 pt-1 text-slate-300">
-            <p>🍽️ <b class="text-white">Main Meal at ~${mealTimeStr}:</b> High carb, moderate protein, low fat & fiber (e.g. rice bowl, oats with banana, or pasta).</p>
-            ${selectedRunIntensity === "hard" || selectedRunIntensity === "veryhard" ? `<p>🍌 <b class="text-amber-300">Light Snack at ~${snackTimeStr}:</b> Quick simple carbs (energy gel, banana, toast with jam).</p>` : ""}
-        </div>
-    `;
+          <div class="space-y-1.5 pt-1 text-slate-300">
+              <p>🍽️ <b class="text-white">Main Meal at ~${mealTimeStr}:</b> High carb, moderate protein, low fat & fiber (e.g. rice bowl, oats with banana, or pasta).</p>
+              ${selectedRunIntensity === "hard" || selectedRunIntensity === "veryhard" ? `<p>🍌 <b class="text-amber-300">Light Snack at ~${snackTimeStr}:</b> Quick simple carbs (energy gel, banana, toast with jam).</p>` : ""}
+          </div>
+      `;
         resultBox.classList.remove("hidden");
       }
 
@@ -4817,66 +4973,56 @@
 
       // Generates Mon -> Sun structured days based on frequency
       function generateWeeklyDays(runsPerWeek, totalKm, phase, goalDist) {
-        const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        // 1. Get the days the user actually checked
+        const selectedDays = Array.from(
+          document.querySelectorAll("#trainingDaysContainer input:checked"),
+        ).map((cb) => parseInt(cb.value));
+        // Example result: [1, 3, 5, 0] for Mon, Wed, Fri, Sun
 
-        // Distribution templates for 7 days
-        let pattern = [];
-        if (runsPerWeek === 3) {
-          pattern = [
-            { type: "Easy", ratio: 0.3 },
-            { type: "Rest", ratio: 0 },
-            { type: phase === "Base" ? "Easy" : "Intervals", ratio: 0.25 },
-            { type: "Rest", ratio: 0 },
-            { type: "Rest", ratio: 0 },
-            { type: "Long", ratio: 0.45 },
-            { type: "Rest", ratio: 0 },
-          ];
-        } else if (runsPerWeek === 4) {
-          pattern = [
-            { type: "Easy", ratio: 0.25 },
-            { type: "Rest", ratio: 0 },
-            { type: phase === "Base" ? "Tempo" : "Intervals", ratio: 0.25 },
-            { type: "Rest", ratio: 0 },
-            { type: "Recovery", ratio: 0.15 },
-            { type: "Long", ratio: 0.35 },
-            { type: "Rest", ratio: 0 },
-          ];
-        } else if (runsPerWeek === 5) {
-          pattern = [
-            { type: "Easy", ratio: 0.2 },
-            { type: "Intervals", ratio: 0.2 },
-            { type: "Rest", ratio: 0 },
-            { type: "Tempo", ratio: 0.2 },
-            { type: "Recovery", ratio: 0.1 },
-            { type: "Long", ratio: 0.3 },
-            { type: "Rest", ratio: 0 },
-          ];
-        } else {
-          // 6 runs
-          pattern = [
-            { type: "Easy", ratio: 0.18 },
-            { type: "Intervals", ratio: 0.18 },
-            { type: "Easy", ratio: 0.14 },
-            { type: "Tempo", ratio: 0.18 },
-            { type: "Recovery", ratio: 0.1 },
-            { type: "Long", ratio: 0.22 },
-            { type: "Rest", ratio: 0 },
-          ];
+        let weekPlan = [];
+
+        // 2. Define our "Workout Types" in order of importance
+        // We'll assign these to the selected days one by one
+        let runPool = [
+          { type: "Long", ratio: 0.4 }, // Biggest run
+          { type: phase === "Base" ? "Easy" : "Intervals", ratio: 0.25 }, // Hardest workout
+          { type: "Easy", ratio: 0.2 }, // Foundation
+          { type: "Recovery", ratio: 0.15 }, // Shortest run
+          { type: "Easy", ratio: 0.1 }, // Extra volume if needed
+        ];
+
+        // 3. Generate the 7-day structure (Mon -> Sun)
+        // d=1 is Mon, d=2 is Tue... d=7 is Sun (represented by value 0)
+        for (let d = 1; d <= 7; d++) {
+          const dayValue = d % 7; // Converts 7 to 0 for Sunday
+
+          // Is this day selected by the user?
+          if (selectedDays.includes(dayValue)) {
+            // Pick a workout from our pool
+            const workoutTemplate = runPool.shift() || {
+              type: "Easy",
+              ratio: 0.1,
+            };
+            const dist = (totalKm * workoutTemplate.ratio).toFixed(1);
+
+            weekPlan.push({
+              day: dayValue,
+              type: workoutTemplate.type,
+              km: dist,
+              desc: `${dist}k ${workoutTemplate.type} Run`,
+            });
+          } else {
+            // It's a Rest Day
+            weekPlan.push({
+              day: dayValue,
+              type: "Rest",
+              km: 0,
+              desc: "REST",
+            });
+          }
         }
 
-        return dayNames.map((day, idx) => {
-          const item = pattern[idx];
-          const dist =
-            item.type === "Rest"
-              ? 0
-              : Math.max(3, Math.round(totalKm * item.ratio));
-          return {
-            day,
-            type: item.type,
-            km: dist,
-            desc: getWorkoutSummary(item.type, dist),
-          };
-        });
+        return weekPlan;
       }
 
       function getWorkoutSummary(type, km) {
@@ -4897,21 +5043,21 @@
           generatedEventPlan;
 
         card.innerHTML = `
-        <div class="flex items-center justify-between pb-2 border-b border-slate-800">
-            <span class="text-xs font-bold text-purple-400 uppercase tracking-wider">Race Forecast (Riegel Model)</span>
-            <span class="text-[11px] text-slate-400">${totalWeeks} Weeks Plan</span>
-        </div>
-        <div class="grid grid-cols-2 gap-3 text-slate-300">
-            <div>
-                <p class="text-[11px] text-slate-400">Current Potential</p>
-                <p class="text-sm font-bold text-white">${formatSecondsToTime(riegelSec)}</p>
-            </div>
-            <div>
-                <p class="text-[11px] text-slate-400">Target Goal</p>
-                <p class="text-sm font-bold text-purple-400">${formatSecondsToTime(goalSec)} <span class="text-[10px] font-normal text-slate-400">(${gapPercent > 0 ? `+${gapPercent}% boost` : "On target"})</span></p>
-            </div>
-        </div>
-    `;
+          <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+              <span class="text-xs font-bold text-purple-400 uppercase tracking-wider">Race Forecast (Riegel Model)</span>
+              <span class="text-[11px] text-slate-400">${totalWeeks} Weeks Plan</span>
+          </div>
+          <div class="grid grid-cols-2 gap-3 text-slate-300">
+              <div>
+                  <p class="text-[11px] text-slate-400">Current Potential</p>
+                  <p class="text-sm font-bold text-white">${formatSecondsToTime(riegelSec)}</p>
+              </div>
+              <div>
+                  <p class="text-[11px] text-slate-400">Target Goal</p>
+                  <p class="text-sm font-bold text-purple-400">${formatSecondsToTime(goalSec)} <span class="text-[10px] font-normal text-slate-400">(${gapPercent > 0 ? `+${gapPercent}% boost` : "On target"})</span></p>
+              </div>
+          </div>
+      `;
       }
 
       // Switch between Weekly and Monthly tabs
@@ -4982,31 +5128,76 @@
 
           // Render 7 Cards (Weekly Detailed View)
           container.innerHTML = `
-            <div class="grid grid-cols-1 sm:grid-cols-1 gap-2">
-                ${week.days
-                  .map((d) => {
-                    const style =
-                      WORKOUT_COLORS[d.type] || WORKOUT_COLORS["Rest"];
-                    return `
-                        <div class="p-2.5 rounded-xl border ${style.border} ${style.bg} flex flex-col justify-between min-h-[75px] transition hover:scale-[1.02]">
-                            <div class="flex items-center justify-between">
-                                <span class="font-bold text-slate-300 text-xs">${d.day}</span>
-                                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded ${style.badge}">${d.type}</span>
-                            </div>
-                            <div class="mt-2">
-                                ${
-                                  d.type === "Rest"
-                                    ? `<p class="text-[11px] text-slate-500 italic">Rest day</p>`
-                                    : `<p class="text-sm font-extrabold text-white">${d.km} <span class="text-[10px] font-normal text-slate-400">km</span></p>
-                                       <p class="text-[9px] text-slate-400 line-clamp-1 leading-tight mt-0.5">${d.desc}</p>`
-                                }
-                            </div>
-                        </div>
-                    `;
-                  })
-                  .join("")}
-            </div>
-        `;
+              <div class="grid grid-cols-1 sm:grid-cols-1 gap-2">
+                  ${week.days
+                    .map((d, dayIndex) => {
+                      // --- 1. Calculate the Date for each card ---
+                      // 'currentCalIndex' is the week number (0, 1, 2...)
+                      // 1. Calculate the Date for each card
+                      const daysOffset = currentCalIndex * 7 + dayIndex;
+
+                      const dayLabels = [
+                        "MON",
+                        "TUE",
+                        "WED",
+                        "THU",
+                        "FRI",
+                        "SAT",
+                        "SUN",
+                      ];
+                      const dayName = dayLabels[dayIndex];
+
+                      // Use the saved start date from your plan
+                      const planStart = new Date(
+                        generatedEventPlan.startDate || new Date(),
+                      );
+                      const workoutDate = new Date(planStart);
+                      workoutDate.setDate(planStart.getDate() + daysOffset);
+
+                      const dayStr = String(workoutDate.getDate()).padStart(
+                        2,
+                        "0",
+                      );
+                      const monthStr = String(
+                        workoutDate.getMonth() + 1,
+                      ).padStart(2, "0");
+                      const dateDisplay = `${dayStr}.${monthStr}`;
+
+                      // --- 2. Check if the day is in the past ---
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const isPast = workoutDate < today;
+
+                      const style =
+                        WORKOUT_COLORS[d.type] || WORKOUT_COLORS["Rest"];
+
+                      // --- 3. Add 'opacity-40 grayscale' if it's a past day ---
+                      const pastClasses = isPast ? "opacity-40 grayscale" : "";
+
+                      return `
+    <div onclick="showWorkoutDetails('${d.type}', '${d.desc}', '${dateDisplay}')" 
+         class="p-2.5 rounded-xl border ${style.border} ${style.bg} ${pastClasses} flex flex-col justify-between cursor-pointer hover:scale-[1.01] transition-all group">
+        <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider ${style.text}">${d.type}</span>
+            <div class="flex flex-col items-end">
+    <span class="text-[9px] font-bold text-slate-500 leading-none mb-0.5">${["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"][dayIndex]}</span>
+    <span class="text-[10px] text-slate-400 font-medium leading-none">${dateDisplay}</span>
+</div>
+
+        </div>
+        
+        <!-- Only showing the distance here -->
+        <div class="mt-1 text-[13px] text-white font-bold">
+            ${d.type.toUpperCase() === "REST" ? "" : d.desc.split(" ")[0]}
+
+
+        </div>
+    </div>
+`;
+                    })
+                    .join("")}
+              </div>
+          `;
         } else {
           // Monthly Compact 4-Week Block View
           const startWeekIdx = currentCalIndex * 4;
@@ -5020,43 +5211,91 @@
           badge.innerText = `Phase: ${monthWeeks[0]?.phase || "Training"}`;
 
           container.innerHTML = `
-            <div class="space-y-2">
-                <!-- Day Headers -->
-                <div class="grid grid-cols-7 text-center text-[10px] font-bold text-slate-500 pb-1">
-                    <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-                </div>
-                <!-- 4 Week Rows -->
-                ${monthWeeks
-                  .map(
-                    (w) => `
-                    <div class="space-y-1">
-                        <div class="flex items-center justify-between text-[10px] text-slate-400 px-1">
-                            <span class="font-semibold text-slate-300">W${w.weekNumber} (${w.phase})</span>
-                            <span>${w.totalKm} km</span>
-                        </div>
-                        <div class="grid grid-cols-7 gap-1.5">
-                            ${w.days
-                              .map((d) => {
-                                const style =
-                                  WORKOUT_COLORS[d.type] ||
-                                  WORKOUT_COLORS["Rest"];
-                                return `
-                                    <div class="p-1.5 rounded-lg border ${style.border} ${style.bg} text-center min-h-[46px] flex flex-col justify-center">
-                                        <span class="text-[8px] font-bold ${style.text} truncate">${d.type}</span>
-                                        <span class="text-[11px] font-bold text-white">${d.type === "Rest" ? "—" : `${d.km}k`}</span>
-                                    </div>
-                                `;
-                              })
-                              .join("")}
-                        </div>
-                    </div>
-                `,
-                  )
-                  .join("")}
-            </div>
-        `;
+              <div class="space-y-2">
+                  <!-- Day Headers -->
+                  <div class="grid grid-cols-7 text-center text-[10px] font-bold text-slate-500 pb-1">
+                      <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                  </div>
+                  <!-- 4 Week Rows -->
+                  ${monthWeeks
+                    .map(
+                      (w) => `
+                      <div class="space-y-1">
+                          <div class="flex items-center justify-between text-[10px] text-slate-400 px-1">
+                              <span class="font-semibold text-slate-300">W${w.weekNumber} (${w.phase})</span>
+                              <span>${w.totalKm} km</span>
+                          </div>
+                          <div class="grid grid-cols-7 gap-1.5">
+                              ${w.days
+                                .map((d) => {
+                                  const style =
+                                    WORKOUT_COLORS[d.type] ||
+                                    WORKOUT_COLORS["Rest"];
+                                  return `
+                                      <div class="p-1.5 rounded-lg border ${style.border} ${style.bg} text-center min-h-[46px] flex flex-col justify-center">
+                                          <span class="text-[8px] font-bold ${style.text} truncate">${d.type}</span>
+                                          <span class="text-[11px] font-bold text-white">${d.type === "Rest" ? "—" : `${d.km}k`}</span>
+                                      </div>
+                                  `;
+                                })
+                                .join("")}
+                          </div>
+                      </div>
+                  `,
+                    )
+                    .join("")}
+              </div>
+          `;
         }
       }
+
+      function updatePrepareWeatherIcon(weatherCode) {
+        const iconContainer = document.getElementById("miniWeatherIcon");
+        if (!iconContainer) return;
+
+        // Simplified logic: choose SVG based on Open-Meteo code
+        let svgPath = "";
+        if (weatherCode <= 3) {
+          // Clear/Cloudy
+          svgPath =
+            '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2m8-10h2M2 12h2"/>';
+        } else if (weatherCode >= 51) {
+          // Rain
+          svgPath =
+            '<path d="M7 18v-6a5 5 0 1 1 10 0v6"/><path d="M9 20l-1 2m4-2l-1 2m4-2l-1 2"/>';
+        }
+
+        iconContainer.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-yellow-400">
+              ${svgPath}
+          </svg>
+      `;
+      }
+
+      function showWorkoutDetails(type, desc, date) {
+        // This creates a simple popup, but you can trigger a modal here!
+        alert(`Workout for ${date}\n\nType: ${type}\nDetails: ${desc}`);
+      }
+
+      // Example: Listening for changes to enforce the limit
+      const trainingDaysContainer = document.getElementById(
+        "trainingDaysContainer",
+      );
+      const dayCounter = document.getElementById("dayCounter");
+
+      trainingDaysContainer.addEventListener("change", (e) => {
+        const runsInput = document.getElementById("eventRunsPerWeek");
+
+        const maxAllowed = parseInt(runsInput.value) || 4;
+        const checked = trainingDaysContainer.querySelectorAll("input:checked");
+
+        if (checked.length > maxAllowed) {
+          e.target.checked = false; // Uncheck the one they just clicked
+          alert(`You only planned for ${maxAllowed} runs per week!`);
+        }
+
+        dayCounter.innerText = `${trainingDaysContainer.querySelectorAll("input:checked").length} / ${maxAllowed} selected`;
+      });
     </script>
 
     <!-- Heart Rate Zones Modal -->
