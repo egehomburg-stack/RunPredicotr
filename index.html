@@ -5277,16 +5277,6 @@
       }
 
       function showWorkoutDetails(type, km, date, desc) {
-        // --- DEBUGGING LINES ---
-        console.log("Modal Triggered for:", type);
-        console.log(
-          "Raw Dist Input:",
-          document.getElementById("eventBaseDist")?.value,
-        );
-        console.log(
-          "Raw Time Input:",
-          document.getElementById("eventBaseTime")?.value,
-        );
         // 1. Get user benchmark data (Fallback to 10km in 60min if empty)
         const rawDist = document.getElementById("eventBaseDist").value;
         const rawTime = document.getElementById("eventBaseTime").value;
@@ -5299,6 +5289,8 @@
         console.log("Parsed Seconds:", bTimeSeconds);
         // 3. Calculate Base Pace in seconds per km
         const basePaceSeconds = bTimeSeconds / bDist;
+        const convPaceSeconds = basePaceSeconds + 60; // Usually +60s for conversational
+        const convPaceStr = formatPace(convPaceSeconds);
         let descriptionHTML = "";
 
         if (type.toUpperCase() === "LONG") {
@@ -5318,13 +5310,6 @@
           const pace3 = formatPace(basePaceSeconds - 15);
           const pace4 = formatPace(basePaceSeconds - 25);
 
-          console.log("Calculated Pace2:", pace2); // Should say "5:00/km"
-          console.log("Calculated Pace3:", pace3); // Should say "4:45/km"
-          console.log("Calculated Pace4:", pace4); // Should say "4:35/km"
-
-          // Check if formatPace actually exists
-          console.log("Is formatPace a function?", typeof formatPace);
-
           // 2. Update the HTML rows EXACTLY like this:
           descriptionHTML = `
     <div class="bg-[#1e222d] rounded-xl overflow-hidden border border-white/5">
@@ -5339,7 +5324,83 @@
         </div>
     </div>
 `;
+        } else if (type.includes("Easy") || type.includes("Recovery")) {
+          descriptionHTML = `
+        <div class="bg-[#1e222d] rounded-xl overflow-hidden border border-white/5">
+            <div class="bg-gray-700/50 px-4 py-2 text-xs font-bold text-gray-300 uppercase tracking-wider">Run</div>
+            <div class="p-2">
+                ${renderSessionRow(1, `${km}km`, `at <span class="underline decoration-dotted text-purple-400">conversational pace</span>`)}
+                <div class="ml-14 -mt-2 text-xs text-gray-500">No faster than ${convPaceStr}</div>
+            </div>
+        </div>
+    `;
+        } else if (type.includes("Interval")) {
+          const totalKm = parseFloat(km);
+          const intervalTotal = totalKm * 0.5;
+          const remainder = totalKm * 0.5;
+          const warmUpDist = (remainder * (2 / 3)).toFixed(1);
+          const coolDownDist = (remainder * (1 / 3)).toFixed(1);
+
+          // Pyramid Units (1+2+4+5+4+2+1 = 19 units)
+          const unit = intervalTotal / 19;
+          const p1 = (unit * 1).toFixed(2); // 200m-ish
+          const p2 = (unit * 2).toFixed(2); // 400m-ish
+          const p3 = (unit * 4).toFixed(2); // 800m-ish
+          const p4 = (unit * 5).toFixed(2); // 1km-ish
+          const formatDist = (d) =>
+            d < 1 ? `${(d * 1000).toFixed(0)}m` : `${d}km`;
+
+          descriptionHTML = `
+        <!-- WARM UP -->
+        <div class="bg-[#1e222d] rounded-xl overflow-hidden border border-white/5 mb-4">
+            <div class="bg-gray-700/50 px-4 py-2 text-xs font-bold text-gray-300 uppercase tracking-wider">Warm-Up</div>
+            <div class="p-2 space-y-2">
+                ${renderSessionRow(1, `${warmUpDist}km`, "at conversational pace")}
+                ${renderIntervalRow(2, "", "", "90s walking rest", "REST")}
+            </div>
+        </div>
+
+        <!-- SESSION (RED PYRAMID) -->
+        <div class="bg-[#1e222d] rounded-xl overflow-hidden border border-white/5 mb-4">
+            <div class="bg-orange-600 px-4 py-2 text-xs font-bold text-white uppercase tracking-wider text-center">Session (3 - 9)</div>
+            <div class="p-2 space-y-2">
+                ${renderIntervalRow(3, `${formatDist(p1)}`, formatPace(basePaceSeconds - 20), "60s walking rest")}
+                ${renderIntervalRow(4, `${formatDist(p2)}`, formatPace(basePaceSeconds - 10), "90s walking rest")}
+                ${renderIntervalRow(5, `${formatDist(p3)}`, formatPace(basePaceSeconds - 5), "90s walking rest")}
+                ${renderIntervalRow(6, `${formatDist(p4)}`, formatPace(basePaceSeconds), "120s walking rest")}
+                ${renderIntervalRow(7, `${formatDist(p3)}`, formatPace(basePaceSeconds - 5), "90s walking rest")}
+                ${renderIntervalRow(8, `${formatDist(p2)}`, formatPace(basePaceSeconds - 10), "90s walking rest")}
+                ${renderIntervalRow(9, `${formatDist(p1)}`, formatPace(basePaceSeconds - 20), "60s walking rest")}
+            </div>
+        </div>
+
+        <!-- COOL DOWN -->
+        <div class="bg-[#1e222d] rounded-xl overflow-hidden border border-white/5 mb-20">
+            <div class="bg-gray-700/50 px-4 py-2 text-xs font-bold text-gray-300 uppercase tracking-wider">Cool Down</div>
+            <div class="p-2">
+                ${renderSessionRow(10, `${coolDownDist}km`, "at conversational pace")}
+            </div>
+        </div>
+    `;
+        } else if (type.includes("Tempo")) {
+          // Yellow styling like your second photo
+          descriptionHTML = `
+        <div class="bg-[#1e222d] rounded-xl overflow-hidden border border-white/5 mb-4">
+             <div class="bg-gray-700/50 px-4 py-2 text-xs font-bold text-gray-300 uppercase tracking-wider">Warm-Up</div>
+             <div class="p-2">${renderSessionRow(1, "2km", "at conversational pace")}</div>
+        </div>
+
+        <div class="bg-[#1e222d] rounded-xl overflow-hidden border border-white/5 mb-4">
+            <div class="bg-yellow-500 px-4 py-2 text-xs font-bold text-black uppercase tracking-wider italic flex items-center">
+                <span class="mr-2">🔄</span> Repeat x2
+            </div>
+            <div class="p-2 space-y-2">
+                ${renderIntervalRow(2, "2km", formatPace(basePaceSeconds + 10), "120s walking rest")}
+            </div>
+        </div>
+    `;
         }
+
         const overlay = document.getElementById("workoutModal");
         const card = document.getElementById("modalCard");
         const header = document.getElementById("modalHeader");
@@ -5390,17 +5451,34 @@
         document.getElementById("modalDesc").innerHTML = descriptionHTML;
       }
 
-      function renderSessionRow(num, dist, pace) {
+      function renderSessionRow(num, dist, desc) {
         return `
-        <div class="flex items-center gap-4 p-3 hover:bg-white/5 rounded-lg transition-colors">
-            <span class="text-xl font-italic font-black text-white/20 w-6">${num}</span>
-            <div class="h-8 w-[1px] bg-white/10"></div>
-            <div class="flex-1 text-sm font-medium">
-                <span class="text-white">${dist}</span> <span class="text-white/50">${pace}</span>
+        <div class="flex items-center justify-between border-l-2 border-gray-700 ml-6 pl-4 py-3 relative">
+            <!-- The Circle Number -->
+            <div class="absolute -left-[11px] top-4 w-5 h-5 rounded-full bg-[#1e222d] border-2 border-gray-600 flex items-center justify-center text-[10px] text-white font-bold">
+                ${num}
             </div>
-            <div class="flex items-center gap-2 text-white/40 text-[10px] font-bold uppercase">
-                <i class="fas fa-running"></i> Run
+            
+            <div class="flex-1">
+                <div class="text-sm font-bold text-white">
+                    ${dist} <span class="font-normal text-gray-400 text-xs">${desc}</span>
+                </div>
             </div>
+            
+            <div class="text-[9px] font-black text-gray-500 uppercase italic opacity-50">RUN</div>
+        </div>
+    `;
+      }
+
+      function renderIntervalRow(num, dist, pace, rest, mode = "RUN / REST") {
+        return `
+        <div class="flex items-center justify-between border-l-2 border-gray-700 ml-6 pl-4 py-2 relative">
+            <div class="absolute -left-[11px] top-3 w-5 h-5 rounded-full bg-[#1e222d] border-2 border-gray-600 flex items-center justify-center text-[10px] text-white font-bold">${num}</div>
+            <div class="flex-1">
+                <div class="text-sm font-bold text-white">${dist} <span class="font-normal text-gray-400 text-xs">${pace ? "at " + pace : ""}</span></div>
+                <div class="text-[11px] text-gray-500 font-medium">${rest}</div>
+            </div>
+            <div class="text-[9px] font-black text-gray-500 uppercase italic opacity-50">${mode}</div>
         </div>
     `;
       }
@@ -5751,14 +5829,11 @@
         class="relative w-full max-w-lg bg-[#121417] rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl transition-all translate-y-full opacity-0"
       >
         <!-- Top Header Area -->
-        <div
-          id="modalHeader"
-          class="h-48 p-6 flex flex-col justify-end relative"
-        >
+        <div id="modalHeader" class="relative w-full pt-12 px-6">
           <!-- Back Arrow -->
           <button
             onclick="closeWorkoutModal()"
-            class="absolute top-6 left-6 text-white hover:opacity-70 transition-opacity"
+            class="z-50 p-2 -ml-2 text-white hover:opacity-70 transition-opacity"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -5822,29 +5897,33 @@
           </div>
 
           <!-- Description Section -->
-          <div class="space-y-4">
-            <div class="flex items-center space-x-2 text-slate-400">
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 6h16M4 12h16M4 18h7"
-                ></path>
-              </svg>
-              <span class="text-[10px] font-bold uppercase tracking-[0.2em]"
-                >Description</span
-              >
+          <div
+            class="overflow-y-auto max-h-[65vh] px-6 custom-scrollbar pb-20 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+          >
+            <div class="space-y-4">
+              <div class="flex items-center space-x-2 text-slate-400">
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 6h16M4 12h16M4 18h7"
+                  ></path>
+                </svg>
+                <span class="text-[10px] font-bold uppercase tracking-[0.2em]"
+                  >Description</span
+                >
+              </div>
+              <div
+                id="modalDesc"
+                class="bg-slate-800/20 rounded-2xl p-5 text-slate-300 text-sm leading-relaxed border border-slate-700/30"
+              ></div>
             </div>
-            <div
-              id="modalDesc"
-              class="bg-slate-800/20 rounded-2xl p-5 text-slate-300 text-sm leading-relaxed border border-slate-700/30"
-            ></div>
           </div>
         </div>
       </div>
