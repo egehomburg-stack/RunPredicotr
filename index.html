@@ -3428,9 +3428,7 @@
           <div id="eventInputsSection" class="space-y-3">
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="text-xs text-slate-400"
-                  >Recent Benchmark Distance</label
-                >
+                <label class="text-xs text-slate-400">Benchmark Distance</label>
                 <select
                   id="eventBaseDist"
                   class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
@@ -3441,9 +3439,7 @@
                 </select>
               </div>
               <div>
-                <label class="text-xs text-slate-400"
-                  >Benchmark Time (hh:mm or mm:ss)</label
-                >
+                <label class="text-xs text-slate-400">Benchmark Time</label>
                 <input
                   type="text"
                   id="eventBaseTime"
@@ -3454,7 +3450,7 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-2">
+            <div class="grid grid-cols-2 md:grid grid-cols-3 gap-2">
               <div>
                 <label class="text-xs text-slate-400">Longest Run (km)</label>
                 <input
@@ -3485,28 +3481,21 @@
                   <option value="6">6 runs</option>
                 </select>
               </div>
-            </div>
-            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800">
               <!-- Start Date Selection -->
-              <div class="mt-6">
-                <label
-                  class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
-                  >1. Starting Date</label
-                >
+              <div>
+                <label class="text-xs text-slate-400">1. Starting Date</label>
                 <input
                   type="date"
                   id="planStartDate"
-                  class="w-full bg-slate-900/50 border border-slate-700 text-white text-sm rounded-xl p-3 mt-2 focus:border-purple-500 outline-none transition-all"
+                  class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
                 />
               </div>
-
+            </div>
+            <div class="grid grid-cols-1 gap-2 pt-2 border-t border-slate-800">
               <!-- Training Days Selection -->
-              <div class="mt-6">
+              <div>
                 <div class="flex justify-between items-center">
-                  <label
-                    class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
-                    >2. Training Days</label
-                  >
+                  <label class="text-xs text-slate-400">Training Days</label>
                   <span
                     id="dayCounter"
                     class="text-[10px] text-purple-400 font-medium"
@@ -3592,7 +3581,7 @@
                 </select>
               </div>
               <div>
-                <label class="text-xs text-slate-400">Goal Time (h:mm)</label>
+                <label class="text-xs text-slate-400">Goal Time</label>
                 <input
                   type="text"
                   id="eventGoalTime"
