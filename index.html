@@ -3439,7 +3439,9 @@
                 </select>
               </div>
               <div>
-                <label class="text-xs text-slate-400">Benchmark Time</label>
+                <label class="text-xs text-slate-400"
+                  >Benchmark Time (Z2)</label
+                >
                 <input
                   type="text"
                   id="eventBaseTime"
@@ -5164,7 +5166,7 @@
                       const pastClasses = isPast ? "opacity-40 grayscale" : "";
 
                       return `
-    <div onclick="showWorkoutDetails('${d.type}', '${d.desc}', '${dateDisplay}')" 
+    <div onclick="showWorkoutDetails('${d.type}', ${d.km}, '${d.date || d.day || "TBD"}', '${d.desc}')" 
          class="p-2.5 rounded-xl border ${style.border} ${style.bg} ${pastClasses} flex flex-col justify-between cursor-pointer hover:scale-[1.01] transition-all group">
         <div class="flex items-center justify-between">
             <span class="text-[10px] font-bold uppercase tracking-wider ${style.text}">${d.type}</span>
@@ -5208,31 +5210,38 @@
                   <!-- 4 Week Rows -->
                   ${monthWeeks
                     .map(
-                      (w) => `
-                      <div class="space-y-1">
-                          <div class="flex items-center justify-between text-[10px] text-slate-400 px-1">
-                              <span class="font-semibold text-slate-300">W${w.weekNumber} (${w.phase})</span>
-                              <span>${w.totalKm} km</span>
-                          </div>
-                          <div class="grid grid-cols-7 gap-1.5">
-                              ${w.days
-                                .map((d) => {
-                                  const style =
-                                    WORKOUT_COLORS[d.type] ||
-                                    WORKOUT_COLORS["Rest"];
-                                  return `
-                                      <div class="p-1.5 rounded-lg border ${style.border} ${style.bg} text-center min-h-[46px] flex flex-col justify-center">
-                                          <span class="text-[8px] font-bold ${style.text} truncate">${d.type}</span>
-                                          <span class="text-[11px] font-bold text-white">${d.type === "Rest" ? "—" : `${d.km}k`}</span>
-                                      </div>
-                                  `;
-                                })
-                                .join("")}
-                          </div>
-                      </div>
-                  `,
+                      (w, weekIndex) => `
+    <div class="space-y-1">
+        <div class="flex items-center justify-between text-[10px] text-slate-400 px-1">
+            <span class="font-semibold text-slate-300">W${w.weekNumber} (${w.phase})</span>
+            <span>${w.totalKm}<span class="hidden sm:inline"> km</span></span>
+        </div>
+        <div class="grid grid-cols-7 gap-1.5">
+            ${w.days
+              .map((d, dayIndex) => {
+                const style = WORKOUT_COLORS[d.type] || WORKOUT_COLORS["Rest"];
+
+                // We call the existing weekly detail function or a new one
+                // Passing weekNumber and dayIndex to identify the exact workout
+                return `
+                        <div onclick="showWorkoutDetails('${d.type}', ${d.km}, '${d.date}', '${d.desc}')" 
+                             class="p-1.5 rounded-lg border ${style.border} ${style.bg} text-center min-h-[46px] flex flex-col justify-center cursor-pointer hover:brightness-125 transition-all active:scale-95 touch-manipulation">
+                            
+                            <span class="text-[8px] font-bold ${style.text} truncate">${d.type}</span>
+                            
+                            <span class="text-[11px] font-bold text-white">
+                                ${d.type === "Rest" ? "-" : `${d.km}<span class="hidden sm:inline">k</span>`}
+                            </span>
+                        </div>
+                    `;
+              })
+              .join("")}
+        </div>
+    </div>
+    `,
                     )
                     .join("")}
+
               </div>
           `;
         }
@@ -5261,9 +5270,152 @@
       `;
       }
 
-      function showWorkoutDetails(type, desc, date) {
-        // This creates a simple popup, but you can trigger a modal here!
-        alert(`Workout for ${date}\n\nType: ${type}\nDetails: ${desc}`);
+      function formatPace(totalSeconds) {
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = Math.round(totalSeconds % 60);
+        return `${minutes}:${seconds.toString().padStart(2, "0")}/km`;
+      }
+
+      function showWorkoutDetails(type, km, date, desc) {
+        // --- DEBUGGING LINES ---
+        console.log("Modal Triggered for:", type);
+        console.log(
+          "Raw Dist Input:",
+          document.getElementById("eventBaseDist")?.value,
+        );
+        console.log(
+          "Raw Time Input:",
+          document.getElementById("eventBaseTime")?.value,
+        );
+        // 1. Get user benchmark data (Fallback to 10km in 60min if empty)
+        const rawDist = document.getElementById("eventBaseDist").value;
+        const rawTime = document.getElementById("eventBaseTime").value;
+
+        // 2. Use your existing parser function!
+        const bDist = parseFloat(rawDist) || 10;
+        const bTimeSeconds = timeStringToSeconds(rawTime) || 3000; // default to 50 min if empty
+
+        console.log("Parsed Distance:", bDist);
+        console.log("Parsed Seconds:", bTimeSeconds);
+        // 3. Calculate Base Pace in seconds per km
+        const basePaceSeconds = bTimeSeconds / bDist;
+        let descriptionHTML = "";
+
+        if (type.toUpperCase() === "LONG") {
+          const total = parseFloat(km);
+          const seg1 = (total / 3).toFixed(1);
+          const remaining = total - seg1;
+          const seg2 = (remaining / 3).toFixed(1);
+          const seg3 = seg2;
+          const seg4 = (total - seg1 - seg2 - seg3).toFixed(1);
+
+          // --- CALCULATE DYNAMIC PACES ---
+          // P2 = Base Pace (e.g. 6:00)
+          // P3 = 15s faster (e.g. 5:45)
+          // P4 = 10s faster than P3 (e.g. 5:35)
+          // 1. Make sure these calculations are happening
+          const pace2 = formatPace(basePaceSeconds);
+          const pace3 = formatPace(basePaceSeconds - 15);
+          const pace4 = formatPace(basePaceSeconds - 25);
+
+          console.log("Calculated Pace2:", pace2); // Should say "5:00/km"
+          console.log("Calculated Pace3:", pace3); // Should say "4:45/km"
+          console.log("Calculated Pace4:", pace4); // Should say "4:35/km"
+
+          // Check if formatPace actually exists
+          console.log("Is formatPace a function?", typeof formatPace);
+
+          // 2. Update the HTML rows EXACTLY like this:
+          descriptionHTML = `
+    <div class="bg-[#1e222d] rounded-xl overflow-hidden border border-white/5">
+        <div class="bg-purple-500/20 px-4 py-2 text-xs font-bold text-purple-300 uppercase tracking-wider">
+            Session (1 - 4)
+        </div>
+        <div class="p-2 space-y-1">
+            ${renderSessionRow(1, `${seg1}km`, 'at <span class="underline decoration-dotted text-purple-400">conversational pace</span>')}
+            ${renderSessionRow(2, `${seg2}km`, `at <span class="text-white">${pace2}</span>`)}
+            ${renderSessionRow(3, `${seg3}km`, `at <span class="text-white">${pace3}</span>`)}
+            ${renderSessionRow(4, `${seg4}km`, `at <span class="text-white">${pace4}</span>`)}
+        </div>
+    </div>
+`;
+        }
+        const overlay = document.getElementById("workoutModal");
+        const card = document.getElementById("modalCard");
+        const header = document.getElementById("modalHeader");
+
+        // 1. Precise Gradient Mapping
+        const themes = {
+          Easy: "from-blue-600/40 to-[#121417]",
+          Rest: "from-slate-600/40 to-[#121417]",
+          Long: "from-purple-600/40 to-[#121417]",
+          Intervals: "from-rose-600/40 to-[#121417]",
+          Tempo: "from-amber-600/40 to-[#121417]",
+          Recovery: "from-emerald-600/40 to-[#121417]",
+        };
+
+        // 2. Set Content
+        // TOP RIGHT gets the date
+        //document.getElementById("modalDate").innerText = date;
+
+        // MAIN TITLE gets the type
+        document.getElementById("modalTitlee").innerText = type + " RUN";
+
+        // STATS ROW gets the km
+        document.getElementById("modalKm").innerText = km ? `${km}km` : "--";
+
+        // DESCRIPTION BOX gets the desc
+        document.getElementById("modalDesc").innerText =
+          desc || "No description provided.";
+        // Simple time estimation logic (e.g., 6:00 min/km avg)
+        const estMinutes = km ? Math.round(km * 6) : 0;
+        const hours = Math.floor(estMinutes / 60);
+        const mins = estMinutes % 60;
+        document.getElementById("modalTime").innerText = km
+          ? `${hours}h ${mins}m`
+          : "Rest";
+
+        // 3. Apply Theme
+        header.className = `h-48 p-6 flex flex-col justify-end relative bg-gradient-to-b ${themes[type] || themes["Rest"]}`;
+
+        // 4. Animation: Slide up from bottom
+        overlay.classList.remove("hidden");
+        setTimeout(() => {
+          card.classList.replace("translate-y-full", "translate-y-0");
+          card.classList.replace("opacity-0", "opacity-100");
+        }, 10);
+
+        document.body.style.overflow = "hidden";
+
+        document.getElementById("modalDesc").innerHTML = descriptionHTML;
+      }
+
+      function renderSessionRow(num, dist, pace) {
+        return `
+        <div class="flex items-center gap-4 p-3 hover:bg-white/5 rounded-lg transition-colors">
+            <span class="text-xl font-italic font-black text-white/20 w-6">${num}</span>
+            <div class="h-8 w-[1px] bg-white/10"></div>
+            <div class="flex-1 text-sm font-medium">
+                <span class="text-white">${dist}</span> <span class="text-white/50">${pace}</span>
+            </div>
+            <div class="flex items-center gap-2 text-white/40 text-[10px] font-bold uppercase">
+                <i class="fas fa-running"></i> Run
+            </div>
+        </div>
+    `;
+      }
+
+      function closeWorkoutModal() {
+        const overlay = document.getElementById("workoutModal");
+        const card = document.getElementById("modalCard");
+
+        card.classList.replace("translate-y-0", "translate-y-full");
+        card.classList.replace("opacity-100", "opacity-0");
+
+        setTimeout(() => {
+          overlay.classList.add("hidden");
+          document.body.style.overflow = "auto";
+        }, 300);
       }
 
       // Example: Listening for changes to enforce the limit
@@ -5584,6 +5736,115 @@
             >
               Done
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Workout Detail Modal -->
+    <div
+      id="workoutModal"
+      class="fixed inset-0 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-md bg-black/60"
+    >
+      <!-- The actual card - On mobile it slides from bottom (items-end), on desktop it's centered -->
+      <div
+        id="modalCard"
+        class="relative w-full max-w-lg bg-[#121417] rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl transition-all translate-y-full opacity-0"
+      >
+        <!-- Top Header Area -->
+        <div
+          id="modalHeader"
+          class="h-48 p-6 flex flex-col justify-end relative"
+        >
+          <!-- Back Arrow -->
+          <button
+            onclick="closeWorkoutModal()"
+            class="absolute top-6 left-6 text-white hover:opacity-70 transition-opacity"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+          </button>
+
+          <!-- Clean Title (just "Easy Run") -->
+          <h1
+            id="modalTitlee"
+            class="text-3xl font-bold text-white leading-tight uppercase tracking-tighter italic"
+          ></h1>
+        </div>
+
+        <!-- Content Area -->
+        <div class="p-6 space-y-6">
+          <!-- Stats Row -->
+          <div class="flex items-center space-x-8 text-slate-300">
+            <div class="flex flex-col">
+              <!-- Label changed to Length -->
+              <span
+                class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1"
+                >Length</span
+              >
+              <span id="modalKm" class="text-xl font-bold text-white"></span>
+            </div>
+
+            <div class="h-10 w-[1px] bg-slate-800"></div>
+
+            <div class="flex flex-col">
+              <span
+                class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1 flex items-center"
+              >
+                <svg
+                  class="w-3 h-3 mr-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                Est. Time
+              </span>
+              <span id="modalTime" class="text-xl font-bold text-white"></span>
+            </div>
+          </div>
+
+          <!-- Description Section -->
+          <div class="space-y-4">
+            <div class="flex items-center space-x-2 text-slate-400">
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h7"
+                ></path>
+              </svg>
+              <span class="text-[10px] font-bold uppercase tracking-[0.2em]"
+                >Description</span
+              >
+            </div>
+            <div
+              id="modalDesc"
+              class="bg-slate-800/20 rounded-2xl p-5 text-slate-300 text-sm leading-relaxed border border-slate-700/30"
+            ></div>
           </div>
         </div>
       </div>
