@@ -1377,6 +1377,34 @@
         runPredictor();
       }
 
+      function loadProfile() {
+        const savedData = localStorage.getItem("runProfileData");
+
+        if (savedData) {
+          const profile = JSON.parse(savedData);
+
+          // Fill the City input
+          if (profile.city) {
+            document.getElementById("userCity").value = profile.city;
+          }
+
+          // Fill the other fields so they stay too
+          document.getElementById("gender").value = profile.gender;
+          document.getElementById("sweatRate").value = profile.sweatRate;
+          document.getElementById("age").value = profile.age;
+          document.getElementById("weight").value = profile.weight;
+          document.getElementById("height").value = profile.height;
+
+          // If data exists, you might want to skip onboarding
+          // and go straight to the app:
+          // document.getElementById("onboarding").classList.add("hidden");
+          // document.getElementById("mainAppContent").classList.remove("hidden");
+        }
+      }
+
+      // Run this function immediately when the page loads
+      window.onload = loadProfile;
+
       function showPage(pageId) {
         // 1. Hide all pages
         document.querySelectorAll(".page-content").forEach((page) => {
@@ -2844,7 +2872,7 @@
       </div>
     </button>
 
-    <!-- 2. Floating Water Button -->
+    <!-- 2. Floating Zone Button -->
     <button
       onclick="toggleZoneModal()"
       class="app-ui-element hidden md:flex fixed top-[313px] right-6 z-50 transition-all active:scale-95 outline-none"
@@ -3298,7 +3326,7 @@
                 d="M15 19l-7-7 7-7"
               ></path>
             </svg>
-            Back to options
+            Go Back
           </button>
 
           <div class="grid grid-cols-2 gap-3">
@@ -3412,7 +3440,7 @@
                   d="M15 19l-7-7 7-7"
                 ></path>
               </svg>
-              Back to options
+              Go Back
             </button>
             <!-- Reset button (only visible when viewing an existing plan) -->
             <button
@@ -3424,8 +3452,212 @@
             </button>
           </div>
 
+          <!-- 1. GOAL SELECTION (First Page) -->
+          <div id="goalSelectionSection" class="space-y-3 p-1">
+            <h1 class="text-2xl font-bold text-white px-1">
+              What is your goal?
+            </h1>
+            <p class="text-slate-400 text-sm mb-6 px-1">
+              Pick a goal that you think suits you best
+            </p>
+
+            <!-- RACE CARD -->
+            <button
+              onclick="goToFindRace()"
+              class="group w-full bg-[#1e222d] hover:bg-[#252a36] p-4 rounded-2xl flex items-center text-left border border-white/5 transition-all"
+            >
+              <div class="text-2xl mr-4 opacity-80 group-hover:opacity-100">
+                🏁
+              </div>
+              <div class="flex-1">
+                <h3 class="text-white font-semibold">Race</h3>
+                <p class="text-slate-500 text-xs">
+                  Booked a running race and want to train?
+                </p>
+              </div>
+            </button>
+
+            <!-- DISTANCE CARD -->
+            <button
+              class="group w-full bg-[#1e222d] hover:bg-[#252a36] p-4 rounded-2xl flex items-center text-left border border-white/5 transition-all"
+            >
+              <div class="text-2xl mr-4 opacity-80 group-hover:opacity-100">
+                🏔️
+              </div>
+              <div class="flex-1">
+                <h3 class="text-white font-semibold">
+                  Run a specific distance
+                </h3>
+                <p class="text-slate-500 text-xs">
+                  Choose your distance, from 5k all the way up to an ultra
+                </p>
+              </div>
+            </button>
+
+            <!-- START RUNNING CARD -->
+            <button
+              class="group w-full bg-[#1e222d] hover:bg-[#252a36] p-5 rounded-2xl flex items-center text-left border border-white/5 transition-all"
+            >
+              <div class="text-2xl mr-4">🐣</div>
+              <h3 class="text-white font-semibold">Start running</h3>
+            </button>
+
+            <!-- GET BACK INTO RUNNING -->
+            <button
+              class="group w-full bg-[#1e222d] hover:bg-[#252a36] p-5 rounded-2xl flex items-center text-left border border-white/5 transition-all"
+            >
+              <div class="text-2xl mr-4">🔄</div>
+              <h3 class="text-white font-semibold">Get back into running</h3>
+            </button>
+          </div>
+
+          <!-- 3. FIND RACE SECTION (Hidden by default) -->
+          <div id="findRaceSection" class="hidden space-y-6">
+            <div class="px-1">
+              <h1 class="text-2xl font-bold text-white">Find your race</h1>
+              <p class="text-slate-400 text-sm">
+                Search and filter to find your race
+              </p>
+            </div>
+
+            <!-- Search Bar Mockup -->
+            <div class="relative px-1">
+              <input
+                type="text"
+                placeholder="Search"
+                class="w-full bg-[#1e222d] border border-white/10 rounded-xl py-3 px-10 text-white text-sm outline-none"
+              />
+              <span class="absolute left-4 top-3.5 opacity-40">🔍</span>
+            </div>
+
+            <h3
+              class="text-white font-bold px-1 text-sm uppercase tracking-wider opacity-60"
+            >
+              Popular Races in Switzerland
+            </h3>
+
+            <!-- ZÜRICH MARATHON CARD -->
+            <button
+              onclick="openZurichDetail()"
+              class="relative w-full h-32 rounded-2xl overflow-hidden group border border-white/10 transition-transform active:scale-[0.98]"
+            >
+              <!-- Background Image with Overlay -->
+              <img
+                src="zurich-marathon.jpg"
+                class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                alt="Zurich"
+              />
+              <div
+                class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"
+              ></div>
+
+              <!-- Content -->
+              <div
+                class="absolute inset-0 p-4 flex flex-col justify-end text-left"
+              >
+                <div
+                  class="text-[#4ade80] text-[10px] font-bold uppercase mb-1"
+                >
+                  Apr 11, 2027 • 10km - Half Marathon - Marathon
+                </div>
+                <h3 class="text-white font-bold text-lg leading-tight">
+                  OCHSNER SPORT Zürich Marathon
+                </h3>
+                <div class="flex items-center text-slate-300 text-xs mt-1">
+                  <span class="mr-2">🇨🇭</span>
+                  <span>Zurich, Switzerland</span>
+                </div>
+              </div>
+
+              <!-- Arrow -->
+              <div
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-white transition-colors"
+              >
+                ❯
+              </div>
+            </button>
+          </div>
+
+          <!-- 4. RACE DETAIL VIEW (Hidden by default) -->
+          <div
+            id="raceDetailSectionZurichMarathon"
+            class="hidden space-y-6 pb-24"
+          >
+            <!-- Top Image Header with Back Button -->
+            <div
+              class="relative w-full h-72 rounded-3xl overflow-hidden border border-white/10"
+            >
+              <img
+                src="zurich-marathon.jpg"
+                class="absolute inset-0 w-full h-full object-cover"
+                alt="Zurich Marathon"
+              />
+              <div
+                class="absolute inset-0 bg-gradient-to-t from-[#12141c] via-black/40 to-black/60"
+              ></div>
+
+              <!-- Title & Location overlay at bottom of image -->
+              <div
+                class="absolute inset-0 p-6 flex flex-col justify-end text-left"
+              >
+                <h1 class="text-2xl font-bold text-white leading-tight mb-2">
+                  OCHSNER SPORT Zürich Marathon
+                </h1>
+              </div>
+            </div>
+
+            <!-- Distance Selector Pills -->
+            <div class="flex gap-2 overflow-x-auto pb-1">
+              <button
+                class="bg-white text-black font-semibold px-5 py-2.5 rounded-full text-sm"
+              >
+                10km
+              </button>
+              <button
+                class="bg-[#1e222d] hover:bg-[#252a36] text-slate-300 px-5 py-2.5 rounded-full text-sm border border-white/5"
+              >
+                Half Marathon
+              </button>
+              <button
+                class="bg-[#1e222d] hover:bg-[#252a36] text-slate-300 px-5 py-2.5 rounded-full text-sm border border-white/5"
+              >
+                Marathon
+              </button>
+            </div>
+
+            <!-- Race Metadata (Date, Location, Elevation) -->
+            <div
+              class="bg-[#1e222d] border border-white/5 rounded-2xl p-4 space-y-4"
+            >
+              <div class="flex items-center text-slate-300 text-sm">
+                <span class="mr-4 text-lg">📅</span>
+                <span>Apr 11, 2027</span>
+              </div>
+              <div
+                class="flex items-center text-slate-300 text-sm border-t border-white/5 pt-3"
+              >
+                <span class="mr-4 text-lg">📍</span>
+                <span>🇨🇭 Zurich, Switzerland</span>
+              </div>
+              <div
+                class="flex items-center text-slate-300 text-sm border-t border-white/5 pt-3"
+              >
+                <span class="mr-4 text-lg">📈</span>
+                <span>Flat</span>
+              </div>
+            </div>
+
+            <!-- NEXT BUTTON (At the bottom to go to benchmarks/inputs) -->
+            <button
+              onclick="goToInputs()"
+              class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-colors shadow-lg shadow-blue-600/20"
+            >
+              Next
+            </button>
+          </div>
+
           <!-- 1. INPUT FORM SECTION (Hidden once plan is calculated) -->
-          <div id="eventInputsSection" class="space-y-3">
+          <div id="eventInputsSection" class="hidden space-y-3">
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="text-xs text-slate-400">Benchmark Distance</label>
@@ -4546,6 +4778,13 @@
         const event = document.getElementById("prepareEventView");
         const title = document.getElementById("prepareModalTitle");
         const subtitle = document.getElementById("prepareModalSubtitle");
+        const inputsSec = document.getElementById("goalSelectionSection");
+        const calSec = document.getElementById("eventCalendarSection");
+        const resetBtn = document.getElementById("btnResetEventPlan");
+        const last = document.getElementById("eventInputsSection");
+        const zuriMarathon = document.getElementById(
+          "raceDetailSectionZurichMarathon",
+        );
 
         menu.classList.add("hidden");
         run.classList.add("hidden");
@@ -4556,6 +4795,8 @@
           subtitle.innerText = "Optimize upcoming runs & race goals";
           updateMenuButtons(); // Updates "Prepare for an Event" vs "See Plan"
           menu.classList.remove("hidden");
+          last.classList.add("hidden");
+          zuriMarathon.classList.add("hidden");
         } else if (view === "run") {
           title.innerText = "Prepare for a Run";
           subtitle.innerText = "Hydration, nutrition & weather readiness";
@@ -4567,10 +4808,6 @@
           subtitle.innerText = generatedEventPlan
             ? "View your customized training roadmap"
             : "Riegel race predictor & phased mileage plan";
-
-          const inputsSec = document.getElementById("eventInputsSection");
-          const calSec = document.getElementById("eventCalendarSection");
-          const resetBtn = document.getElementById("btnResetEventPlan");
 
           if (generatedEventPlan) {
             // Already have a plan -> show ONLY calendar
@@ -4587,6 +4824,17 @@
           }
           event.classList.remove("hidden");
         }
+      }
+
+      function goToInputs() {
+        const findRacePage = document.getElementById(
+          "raceDetailSectionZurichMarathon",
+        );
+        const inputPage = document.getElementById("eventInputsSection");
+
+        // Hide Goals, Show Inputs
+        findRacePage.classList.add("hidden");
+        inputPage.classList.remove("hidden");
       }
 
       // Dynamically updates Menu Button 2 text
@@ -5051,6 +5299,17 @@
       `;
       }
 
+      function openZurichDetail() {
+        document.getElementById("findRaceSection").classList.add("hidden");
+        document
+          .getElementById("raceDetailSectionZurichMarathon")
+          .classList.remove("hidden");
+
+        // Optional: Update modal subtitle if you have one
+        const sub = document.getElementById("prepareModalSubtitle");
+        if (sub) sub.innerText = "Race Details";
+      }
+
       // Switch between Weekly and Monthly tabs
       function setCalendarMode(mode) {
         currentCalMode = mode;
@@ -5071,6 +5330,11 @@
           currentCalIndex = 0; // jump to month 1
         }
         renderCalendar();
+      }
+
+      function goToFindRace() {
+        document.getElementById("goalSelectionSection").classList.add("hidden");
+        document.getElementById("findRaceSection").classList.remove("hidden");
       }
 
       // Next / Prev Button Navigation
@@ -5317,7 +5581,13 @@
             Session (1 - 4)
         </div>
         <div class="p-2 space-y-1">
-            ${renderSessionRow(1, `${seg1}km`, 'at <span class="underline decoration-dotted text-purple-400">conversational pace</span>')}
+            ${renderSessionRow(
+              1,
+              `${seg1}km`,
+              `at <button onclick="openPaceInfo()" class="underline decoration-slate-500 underline-offset-4 hover:text-white transition-colors">
+    conversational pace
+</button>`,
+            )}
             ${renderSessionRow(2, `${seg2}km`, `at <span class="text-white">${pace2}</span>`)}
             ${renderSessionRow(3, `${seg3}km`, `at <span class="text-white">${pace3}</span>`)}
             ${renderSessionRow(4, `${seg4}km`, `at <span class="text-white">${pace4}</span>`)}
@@ -5329,7 +5599,13 @@
         <div class="bg-[#1e222d] rounded-xl overflow-hidden border border-white/5">
             <div class="bg-gray-700/50 px-4 py-2 text-xs font-bold text-gray-300 uppercase tracking-wider">Run</div>
             <div class="p-2">
-                ${renderSessionRow(1, `${km}km`, `at <span class="underline decoration-dotted text-purple-400">conversational pace</span>`)}
+                ${renderSessionRow(
+                  1,
+                  `${km}km`,
+                  `at <button onclick="openPaceInfo()" class="underline decoration-slate-500 underline-offset-4 hover:text-white transition-colors">
+    conversational pace
+</button>`,
+                )}
                 <div class="ml-14 -mt-2 text-xs text-gray-500">No faster than ${convPaceStr}</div>
             </div>
         </div>
@@ -5339,23 +5615,37 @@
           const intervalTotal = totalKm * 0.5;
           const remainder = totalKm * 0.5;
           const warmUpDist = (remainder * (2 / 3)).toFixed(1);
-          const coolDownDist = (remainder * (1 / 3)).toFixed(1);
 
           // Pyramid Units (1+2+4+5+4+2+1 = 19 units)
-          const unit = intervalTotal / 19;
-          const p1 = (unit * 1).toFixed(2); // 200m-ish
-          const p2 = (unit * 2).toFixed(2); // 400m-ish
-          const p3 = (unit * 4).toFixed(2); // 800m-ish
-          const p4 = (unit * 5).toFixed(2); // 1km-ish
           const formatDist = (d) =>
             d < 1 ? `${(d * 1000).toFixed(0)}m` : `${d}km`;
+          const unit = intervalTotal / 19;
+          const p1 = unit * 1; // 200m-ish
+          const p2 = unit * 2; // 400m-ish
+          const p3 = unit * 4; // 800m-ish
+          const p4 = unit * 5; // 1km-ish
+          const p1f = Math.round(p1 * 10) / 10;
+          const p2f = Math.round(p2 * 10) / 10;
+          const p3f = Math.round(p3 * 10) / 10;
+          const p4f = Math.round(p4 * 10) / 10;
+
+          const coolDownDist =
+            Math.round(
+              (totalKm - warmUpDist - 2 * p1f - 2 * p2f - 2 * p3f - p4f) * 10,
+            ) / 10;
 
           descriptionHTML = `
         <!-- WARM UP -->
         <div class="bg-[#1e222d] rounded-xl overflow-hidden border border-white/5 mb-4">
             <div class="bg-gray-700/50 px-4 py-2 text-xs font-bold text-gray-300 uppercase tracking-wider">Warm-Up</div>
             <div class="p-2 space-y-2">
-                ${renderSessionRow(1, `${warmUpDist}km`, "at conversational pace")}
+                ${renderSessionRow(
+                  1,
+                  `${warmUpDist}km`,
+                  `at <button onclick="openPaceInfo()" class="underline decoration-slate-500 underline-offset-4 hover:text-white transition-colors">
+    conversational pace
+</button>`,
+                )}
                 ${renderIntervalRow(2, "", "", "90s walking rest", "REST")}
             </div>
         </div>
@@ -5364,13 +5654,13 @@
         <div class="bg-[#1e222d] rounded-xl overflow-hidden border border-white/5 mb-4">
             <div class="bg-orange-600 px-4 py-2 text-xs font-bold text-white uppercase tracking-wider text-center">Session (3 - 9)</div>
             <div class="p-2 space-y-2">
-                ${renderIntervalRow(3, `${formatDist(p1)}`, formatPace(basePaceSeconds - 20), "60s walking rest")}
-                ${renderIntervalRow(4, `${formatDist(p2)}`, formatPace(basePaceSeconds - 10), "90s walking rest")}
-                ${renderIntervalRow(5, `${formatDist(p3)}`, formatPace(basePaceSeconds - 5), "90s walking rest")}
-                ${renderIntervalRow(6, `${formatDist(p4)}`, formatPace(basePaceSeconds), "120s walking rest")}
-                ${renderIntervalRow(7, `${formatDist(p3)}`, formatPace(basePaceSeconds - 5), "90s walking rest")}
-                ${renderIntervalRow(8, `${formatDist(p2)}`, formatPace(basePaceSeconds - 10), "90s walking rest")}
-                ${renderIntervalRow(9, `${formatDist(p1)}`, formatPace(basePaceSeconds - 20), "60s walking rest")}
+                ${renderIntervalRow(3, `${formatDist(p1f)}`, formatPace(basePaceSeconds - 20), "60s walking rest")}
+                ${renderIntervalRow(4, `${formatDist(p2f)}`, formatPace(basePaceSeconds - 10), "90s walking rest")}
+                ${renderIntervalRow(5, `${formatDist(p3f)}`, formatPace(basePaceSeconds - 5), "90s walking rest")}
+                ${renderIntervalRow(6, `${formatDist(p4f)}`, formatPace(basePaceSeconds), "120s walking rest")}
+                ${renderIntervalRow(7, `${formatDist(p3f)}`, formatPace(basePaceSeconds - 5), "90s walking rest")}
+                ${renderIntervalRow(8, `${formatDist(p2f)}`, formatPace(basePaceSeconds - 10), "90s walking rest")}
+                ${renderIntervalRow(9, `${formatDist(p1f)}`, formatPace(basePaceSeconds - 20), "60s walking rest")}
             </div>
         </div>
 
@@ -5378,7 +5668,13 @@
         <div class="bg-[#1e222d] rounded-xl overflow-hidden border border-white/5 mb-20">
             <div class="bg-gray-700/50 px-4 py-2 text-xs font-bold text-gray-300 uppercase tracking-wider">Cool Down</div>
             <div class="p-2">
-                ${renderSessionRow(10, `${coolDownDist}km`, "at conversational pace")}
+                ${renderSessionRow(
+                  10,
+                  `${coolDownDist}km`,
+                  `at <button onclick="openPaceInfo()" class="underline decoration-slate-500 underline-offset-4 hover:text-white transition-colors">
+    conversational pace
+</button>`,
+                )}
             </div>
         </div>
     `;
@@ -5387,7 +5683,13 @@
           descriptionHTML = `
         <div class="bg-[#1e222d] rounded-xl overflow-hidden border border-white/5 mb-4">
              <div class="bg-gray-700/50 px-4 py-2 text-xs font-bold text-gray-300 uppercase tracking-wider">Warm-Up</div>
-             <div class="p-2">${renderSessionRow(1, "2km", "at conversational pace")}</div>
+             <div class="p-2">${renderSessionRow(
+               1,
+               "2km",
+               `at <button onclick="openPaceInfo()" class="underline decoration-slate-500 underline-offset-4 hover:text-white transition-colors">
+    conversational pace
+</button>`,
+             )}</div>
         </div>
 
         <div class="bg-[#1e222d] rounded-xl overflow-hidden border border-white/5 mb-4">
@@ -5515,6 +5817,19 @@
 
         dayCounter.innerText = `${trainingDaysContainer.querySelectorAll("input:checked").length} / ${maxAllowed} selected`;
       });
+      function roundToNearest50(num) {
+        return Math.round(num / 50) * 50;
+      }
+
+      function openPaceInfo() {
+        const modal = document.getElementById("paceInfoModal");
+        modal.classList.remove("hidden");
+        // Optional: add a slight slide-up animation here later
+      }
+
+      function closePaceInfo() {
+        document.getElementById("paceInfoModal").classList.add("hidden");
+      }
     </script>
 
     <!-- Heart Rate Zones Modal -->
@@ -5921,10 +6236,85 @@
               </div>
               <div
                 id="modalDesc"
-                class="bg-slate-800/20 rounded-2xl p-5 text-slate-300 text-sm leading-relaxed border border-slate-700/30"
+                class="max-h-[103vh] bg-slate-800/20 rounded-2xl p-5 text-slate-300 text-sm leading-relaxed border border-slate-700/30"
               ></div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+    <!-- Conversational Pace Modal -->
+    <div id="paceInfoModal" class="fixed inset-0 z-[100] hidden">
+      <!-- Backdrop -->
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+      <!-- Modal Content -->
+      <div
+        class="absolute inset-x-0 bottom-0 top-10 bg-gradient-to-br from-[#12141a] via-[#1e222d] to-[#343842] rounded-t-[32px] flex flex-col overflow-hidden border-t border-white/10"
+      >
+        <!-- Header with X -->
+        <div class="flex items-center p-6 pb-2">
+          <button
+            onclick="closePaceInfo()"
+            class="p-2 -ml-2 text-white hover:opacity-70 transition-opacity"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto px-8 pb-12 custom-scrollbar">
+          <h2
+            class="text-2xl font-black text-white italic uppercase tracking-tight mb-6 leading-tight"
+          >
+            What's a<br />Conversational Pace?
+          </h2>
+
+          <p class="text-slate-300 leading-relaxed mb-8">
+            A conversational pace, as the name suggests, should be slow enough
+            that you can speak in full sentences and hold a conversation with
+            someone. However, it may be hard to determine what that feels like.
+            This is why you have to listen to your breath. If you can feel and
+            hear yourself breathing heavily, the chances are you may be going a
+            little fast.
+          </p>
+
+          <h2
+            class="text-2xl font-black text-white italic uppercase tracking-tight mb-6 leading-tight"
+          >
+            Is Conversational Pace and
+            <button
+              onclick="
+                (closePaceInfo(), closeWorkoutModal(), toggleZoneModal())
+              "
+              class="text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              Zone 2
+            </button>
+            the Same Thing?
+          </h2>
+
+          <p class="text-slate-300 leading-relaxed">
+            The short answer to this question is yes – while working in zone 2,
+            you will usually also be able to hold a conversation and feel
+            comfortable. However, it's important to remember that many factors
+            from temperature, terrain and elevation, through to your current
+            fitness level, stress level, and even how much caffeine you've had,
+            can all raise your heart rate, even when you're running at a pace
+            that feels conversational.
+          </p>
         </div>
       </div>
     </div>
