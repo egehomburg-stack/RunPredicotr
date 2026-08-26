@@ -3609,16 +3609,22 @@
             <!-- Distance Selector Pills -->
             <div class="flex gap-2 overflow-x-auto pb-1">
               <button
+                id="dist-10k-Zuri-Marathon"
+                onclick="selectDistanceZuriMarathon('10k')"
                 class="bg-white text-black font-semibold px-5 py-2.5 rounded-full text-sm"
               >
                 10km
               </button>
               <button
+                id="dist-half-Zuri-Marathon"
+                onclick="selectDistanceZuriMarathon('half')"
                 class="bg-[#1e222d] hover:bg-[#252a36] text-slate-300 px-5 py-2.5 rounded-full text-sm border border-white/5"
               >
                 Half Marathon
               </button>
               <button
+                id="dist-full-Zuri-Marathon"
+                onclick="selectDistanceZuriMarathon('full')"
                 class="bg-[#1e222d] hover:bg-[#252a36] text-slate-300 px-5 py-2.5 rounded-full text-sm border border-white/5"
               >
                 Marathon
@@ -3649,8 +3655,252 @@
 
             <!-- NEXT BUTTON (At the bottom to go to benchmarks/inputs) -->
             <button
-              onclick="goToInputs()"
+              onclick="goToRunningQuestions()"
               class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-colors shadow-lg shadow-blue-600/20"
+            >
+              Next
+            </button>
+          </div>
+
+          <!-- runningQuestion -->
+          <div id="runningQuestions" class="hidden space-y-6 pb-24 text-left">
+            <div class="px-1">
+              <h1 class="text-2xl font-bold text-white">Training Schedule</h1>
+              <p class="text-slate-400 text-sm">
+                Customize how many days a week you want to train.
+              </p>
+            </div>
+
+            <!-- Runs per week selector -->
+            <div
+              class="bg-[#1e222d] border border-white/5 rounded-2xl p-4 space-y-3"
+            >
+              <label class="text-white text-sm font-semibold"
+                >Runs per week</label
+              >
+              <div>
+                <label class="text-xs text-slate-400">Runs / week</label>
+                <select
+                  id="eventRunsPerWeek"
+                  class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
+                >
+                  <option value="2">2 runs</option>
+                  <option value="3">3 runs</option>
+                  <option value="4" selected>4 runs</option>
+                  <option value="5">5 runs</option>
+                  <option value="6">6 runs</option>
+                </select>
+              </div>
+
+              <!-- Days you want to run -->
+              <div
+                class="grid grid-cols-1 gap-2 pt-2 border-t border-slate-800"
+              >
+                <!-- Training Days Selection -->
+                <div>
+                  <div class="flex justify-between items-center">
+                    <label class="text-xs text-slate-400">Training Days</label>
+                    <span
+                      id="dayCounter"
+                      class="text-[10px] text-purple-400 font-medium"
+                      >0 / 4 selected</span
+                    >
+                  </div>
+
+                  <div
+                    class="grid grid-cols-7 gap-1 mt-2"
+                    id="trainingDaysContainer"
+                  >
+                    <!-- We use hidden checkboxes with styled labels for a "button" look -->
+                    <label class="cursor-pointer">
+                      <input type="checkbox" value="1" class="hidden peer" />
+                      <div
+                        class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
+                      >
+                        M
+                      </div>
+                    </label>
+                    <label class="cursor-pointer">
+                      <input type="checkbox" value="2" class="hidden peer" />
+                      <div
+                        class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
+                      >
+                        T
+                      </div>
+                    </label>
+                    <label class="cursor-pointer">
+                      <input type="checkbox" value="3" class="hidden peer" />
+                      <div
+                        class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
+                      >
+                        W
+                      </div>
+                    </label>
+                    <label class="cursor-pointer">
+                      <input type="checkbox" value="4" class="hidden peer" />
+                      <div
+                        class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
+                      >
+                        T
+                      </div>
+                    </label>
+                    <label class="cursor-pointer">
+                      <input type="checkbox" value="5" class="hidden peer" />
+                      <div
+                        class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
+                      >
+                        F
+                      </div>
+                    </label>
+                    <label class="cursor-pointer">
+                      <input type="checkbox" value="6" class="hidden peer" />
+                      <div
+                        class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
+                      >
+                        S
+                      </div>
+                    </label>
+                    <label class="cursor-pointer">
+                      <input type="checkbox" value="0" class="hidden peer" />
+                      <div
+                        class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
+                      >
+                        S
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Long run day selector -->
+            <div
+              class="bg-[#1e222d] border border-white/5 rounded-2xl p-4 space-y-3"
+            >
+              <label class="text-white text-sm font-semibold"
+                >Preferred long run day</label
+              >
+              <select
+                id="longRunDaySelect"
+                class="w-full bg-[#12141c] border border-white/10 rounded-xl py-3 px-4 text-white text-sm outline-none"
+              >
+                <option value="Sunday">Sunday</option>
+                <option value="Saturday">Saturday</option>
+                <option value="Friday">Friday</option>
+              </select>
+            </div>
+
+            <!-- NEXT BUTTON -->
+            <button
+              onclick="goToBenchmark()"
+              class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-colors shadow-lg shadow-blue-600/20"
+            >
+              Next
+            </button>
+          </div>
+
+          <!-- 6. CURRENT FITNESS PICKER SECTION -->
+          <div id="benchmarkPage" class="hidden space-y-8 pb-24 text-center">
+            <div class="text-left px-1">
+              <h1 class="text-2xl font-bold text-white leading-tight">
+                Enter your estimated current 5k race time
+              </h1>
+              <p class="text-slate-400 text-sm mt-2">
+                Choose a time reflective of your current fitness level.
+              </p>
+            </div>
+
+            <!-- Distance Tabs -->
+            <div class="flex justify-center gap-2">
+              <button
+                class="bg-white text-black px-6 py-2 rounded-full text-sm font-semibold"
+              >
+                5k
+              </button>
+              <button
+                class="bg-slate-800 text-slate-400 px-6 py-2 rounded-full text-sm font-semibold"
+              >
+                10k
+              </button>
+              <button
+                class="bg-slate-800 text-slate-400 px-6 py-2 rounded-full text-sm font-semibold"
+              >
+                Half Marathon
+              </button>
+            </div>
+
+            <p class="text-white text-lg font-medium">
+              I can currently run a <span class="text-blue-400">5k</span> in
+              <span id="displayTime">0h 25m 0s</span>
+            </p>
+
+            <!-- The Wheel Picker Container -->
+            <div class="relative flex justify-center items-center h-48 w-full">
+              <!-- Selection Highlight Box -->
+              <div
+                class="absolute w-full h-14 bg-white/5 border-y border-white/10 pointer-events-none"
+              ></div>
+
+              <div class="flex gap-4 h-full items-center">
+                <!-- Hours Column -->
+                <div class="flex flex-col items-center">
+                  <span
+                    class="text-[10px] uppercase text-slate-500 font-bold mb-1"
+                    >Hours</span
+                  >
+                  <div
+                    id="hourScroll"
+                    class="h-32 overflow-y-scroll snap-y snap-mandatory no-scrollbar w-16"
+                  >
+                    <div class="h-10"></div>
+                    <!-- Padding -->
+                    <!-- JS will inject 0-23 here -->
+                    <div class="h-10"></div>
+                    <!-- Padding -->
+                  </div>
+                </div>
+
+                <span class="text-white font-bold text-xl mt-4">:</span>
+
+                <!-- Minutes Column -->
+                <div class="flex flex-col items-center">
+                  <span
+                    class="text-[10px] uppercase text-slate-500 font-bold mb-1"
+                    >Min</span
+                  >
+                  <div
+                    id="minScroll"
+                    class="h-32 overflow-y-scroll snap-y snap-mandatory no-scrollbar w-16"
+                  >
+                    <div class="h-10"></div>
+                    <!-- JS will inject 0-59 here -->
+                    <div class="h-10"></div>
+                  </div>
+                </div>
+
+                <span class="text-white font-bold text-xl mt-4">:</span>
+
+                <!-- Seconds Column -->
+                <div class="flex flex-col items-center">
+                  <span
+                    class="text-[10px] uppercase text-slate-500 font-bold mb-1"
+                    >Sec</span
+                  >
+                  <div
+                    id="secScroll"
+                    class="h-32 overflow-y-scroll snap-y snap-mandatory no-scrollbar w-16"
+                  >
+                    <div class="h-10"></div>
+                    <!-- JS will inject 0-59 here -->
+                    <div class="h-10"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onclick="goToConfig()"
+              class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl mt-8"
             >
               Next
             </button>
@@ -3703,18 +3953,6 @@
                   class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
                 />
               </div>
-              <div>
-                <label class="text-xs text-slate-400">Runs / week</label>
-                <select
-                  id="eventRunsPerWeek"
-                  class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
-                >
-                  <option value="3">3 runs</option>
-                  <option value="4" selected>4 runs</option>
-                  <option value="5">5 runs</option>
-                  <option value="6">6 runs</option>
-                </select>
-              </div>
               <!-- Start Date Selection -->
               <div>
                 <label class="text-xs text-slate-400">Starting Date</label>
@@ -3723,82 +3961,6 @@
                   id="planStartDate"
                   class="appearance-none -webkit-appearance-none h-[40px] mt-1 w-full px-2 py-0 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
                 />
-              </div>
-            </div>
-            <div class="grid grid-cols-1 gap-2 pt-2 border-t border-slate-800">
-              <!-- Training Days Selection -->
-              <div>
-                <div class="flex justify-between items-center">
-                  <label class="text-xs text-slate-400">Training Days</label>
-                  <span
-                    id="dayCounter"
-                    class="text-[10px] text-purple-400 font-medium"
-                    >0 / 4 selected</span
-                  >
-                </div>
-
-                <div
-                  class="grid grid-cols-7 gap-1 mt-2"
-                  id="trainingDaysContainer"
-                >
-                  <!-- We use hidden checkboxes with styled labels for a "button" look -->
-                  <label class="cursor-pointer">
-                    <input type="checkbox" value="1" class="hidden peer" />
-                    <div
-                      class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
-                    >
-                      M
-                    </div>
-                  </label>
-                  <label class="cursor-pointer">
-                    <input type="checkbox" value="2" class="hidden peer" />
-                    <div
-                      class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
-                    >
-                      T
-                    </div>
-                  </label>
-                  <label class="cursor-pointer">
-                    <input type="checkbox" value="3" class="hidden peer" />
-                    <div
-                      class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
-                    >
-                      W
-                    </div>
-                  </label>
-                  <label class="cursor-pointer">
-                    <input type="checkbox" value="4" class="hidden peer" />
-                    <div
-                      class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
-                    >
-                      T
-                    </div>
-                  </label>
-                  <label class="cursor-pointer">
-                    <input type="checkbox" value="5" class="hidden peer" />
-                    <div
-                      class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
-                    >
-                      F
-                    </div>
-                  </label>
-                  <label class="cursor-pointer">
-                    <input type="checkbox" value="6" class="hidden peer" />
-                    <div
-                      class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
-                    >
-                      S
-                    </div>
-                  </label>
-                  <label class="cursor-pointer">
-                    <input type="checkbox" value="0" class="hidden peer" />
-                    <div
-                      class="h-10 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-400 transition-all"
-                    >
-                      S
-                    </div>
-                  </label>
-                </div>
               </div>
             </div>
 
@@ -4228,6 +4390,19 @@
         </div>
       </div>
     </div>
+
+    <style>
+      /* Hide scrollbars for Chrome, Safari and Opera */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      /* Hide scrollbars for IE, Edge and Firefox */
+      .no-scrollbar {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+      }
+    </style>
+
     <script>
       let hydrationChart = null;
 
@@ -4755,6 +4930,40 @@
         }
       }
 
+      // Variable to keep track of the selected distance
+      let selectedRaceDistance = "10k";
+
+      function selectDistanceZuriMarathon(distanceType) {
+        selectedRaceDistance = distanceType;
+
+        // Grab the buttons
+        const btn10k = document.getElementById("dist-10k-Zuri-Marathon");
+        const btnHalf = document.getElementById("dist-half-Zuri-Marathon");
+        const btnFull = document.getElementById("dist-full-Zuri-Marathon");
+
+        // Reset all buttons to inactive style
+        const inactiveClass =
+          "bg-[#1e222d] hover:bg-[#252a36] text-slate-300 px-5 py-2.5 rounded-full text-sm border border-white/5 transition-colors whitespace-nowrap";
+        const activeClass =
+          "bg-white text-black font-semibold px-5 py-2.5 rounded-full text-sm transition-colors whitespace-nowrap";
+
+        btn10k.className = inactiveClass;
+        btnHalf.className = inactiveClass;
+        btnFull.className = inactiveClass;
+
+        // Highlight the selected one and set the value for your next inputs screen
+        if (distanceType === "10k") {
+          btn10k.className = activeClass;
+          document.getElementById("eventBaseDist").value = "10";
+        } else if (distanceType === "half") {
+          btnHalf.className = activeClass;
+          document.getElementById("eventBaseDist").value = "21.0975";
+        } else if (distanceType === "full") {
+          btnFull.className = activeClass;
+          document.getElementById("eventBaseDist").value = "42.195";
+        }
+      }
+
       function closePrepareModal() {
         // Re-enable scroll
         document.body.style.overflow = "auto";
@@ -4782,6 +4991,9 @@
         const calSec = document.getElementById("eventCalendarSection");
         const resetBtn = document.getElementById("btnResetEventPlan");
         const last = document.getElementById("eventInputsSection");
+        const races = document.getElementById("findRaceSection");
+        const runningQuestion = document.getElementById("runningQuestions");
+        const benchmark = document.getElementById("benchmarkPage");
         const zuriMarathon = document.getElementById(
           "raceDetailSectionZurichMarathon",
         );
@@ -4797,6 +5009,9 @@
           menu.classList.remove("hidden");
           last.classList.add("hidden");
           zuriMarathon.classList.add("hidden");
+          races.classList.add("hidden");
+          runningQuestion.classList.add("hidden");
+          benchmark.classList.add("hidden");
         } else if (view === "run") {
           title.innerText = "Prepare for a Run";
           subtitle.innerText = "Hydration, nutrition & weather readiness";
@@ -4826,15 +5041,116 @@
         }
       }
 
-      function goToInputs() {
-        const findRacePage = document.getElementById(
-          "raceDetailSectionZurichMarathon",
-        );
+      function goToConfig() {
+        const findRacePage = document.getElementById("benchmarkPage");
         const inputPage = document.getElementById("eventInputsSection");
 
         // Hide Goals, Show Inputs
         findRacePage.classList.add("hidden");
         inputPage.classList.remove("hidden");
+      }
+
+      function goToBenchmark() {
+        const benchmarkPage = document.getElementById("benchmarkPage");
+        const runningQuestion = document.getElementById("runningQuestions");
+        const runsInput = document.getElementById("eventRunsPerWeek");
+        const maxAllowed = parseInt(runsInput.value);
+
+        const checkedDays =
+          trainingDaysContainer.querySelectorAll("input:checked").length;
+
+        // 2. Validation Checks
+        if (checkedDays !== maxAllowed) {
+          alert(
+            `Wait! You set ${maxAllowed} runs per week but only picked ${checkedDays} days.`,
+          );
+          return; // Stops the plan from being created
+        }
+
+        // Hide Goals, Show Inputs
+        benchmarkPage.classList.remove("hidden");
+        runningQuestion.classList.add("hidden");
+
+        initPickers();
+      }
+
+      let pickersInitialized = false;
+
+      function initPickers() {
+        if (pickersInitialized) return;
+        console.log("Initializing Pickers..."); // Check your console for this!
+
+        const hours = document.getElementById("hourScroll");
+        const mins = document.getElementById("minScroll");
+        const secs = document.getElementById("secScroll");
+
+        // Helper to create the number divs
+        const createItem = (n, unit) => {
+          const div = document.createElement("div");
+          // Ensure h-12 matches our 48px calculation (12 * 4 = 48)
+          div.className =
+            "h-12 flex items-center justify-center snap-center text-xl font-bold text-slate-500 transition-all cursor-pointer";
+          div.innerText = n + unit;
+          return div;
+        };
+
+        // 1. Clear existing padding divs before injecting
+        hours.innerHTML = '<div class="h-12"></div>';
+        mins.innerHTML = '<div class="h-12"></div>';
+        secs.innerHTML = '<div class="h-12"></div>';
+
+        // 2. Inject Numbers
+        for (let i = 0; i < 24; i++) hours.appendChild(createItem(i, "h"));
+        for (let i = 0; i < 60; i++) mins.appendChild(createItem(i, "m"));
+        for (let i = 0; i < 60; i++) secs.appendChild(createItem(i, "s"));
+
+        // 3. Add back the bottom padding
+        [hours, mins, secs].forEach((p) => {
+          const pad = document.createElement("div");
+          pad.className = "h-12";
+          p.appendChild(pad);
+        });
+
+        // 4. Attach Scroll Listeners
+        [hours, mins, secs].forEach((picker) => {
+          picker.addEventListener("scroll", updateDisplayTime);
+        });
+
+        pickersInitialized = true;
+
+        // Set a default starting position (e.g., 25 mins)
+        setTimeout(() => {
+          mins.scrollTop = 25 * 48;
+          updateDisplayTime();
+        }, 100);
+      }
+
+      function updateDisplayTime() {
+        const h = Math.round(
+          document.getElementById("hourScroll").scrollTop / 48,
+        );
+        const m = Math.round(
+          document.getElementById("minScroll").scrollTop / 48,
+        );
+        const s = Math.round(
+          document.getElementById("secScroll").scrollTop / 48,
+        );
+
+        // Update the text at the top
+        const display = document.getElementById("displayTime");
+        if (display) {
+          display.innerText = `${h}h ${m}m ${s}s`;
+        }
+      }
+
+      function goToRunningQuestions() {
+        const zuriMarathon = document.getElementById(
+          "raceDetailSectionZurichMarathon",
+        );
+        const runningQuestion = document.getElementById("runningQuestions");
+
+        zuriMarathon.classList.add("hidden");
+        runningQuestion.classList.remove("hidden");
       }
 
       // Dynamically updates Menu Button 2 text
@@ -4866,8 +5182,7 @@
         const startDateInput = document.getElementById("planStartDate");
 
         const maxAllowed = parseInt(runsInput.value);
-        const checkedDays =
-          trainingDaysContainer.querySelectorAll("input:checked").length;
+
         // 1. Get the raw date from the input
         const inputDate = new Date(startDateInput.value);
 
@@ -4879,13 +5194,10 @@
         // 3. Store the snapped Monday as your startDate
         const startDate = snappedMonday.toISOString().split("T")[0];
 
+        const checkedDays =
+          trainingDaysContainer.querySelectorAll("input:checked").length;
+
         // 2. Validation Checks
-        if (checkedDays !== maxAllowed) {
-          alert(
-            `Wait! You set ${maxAllowed} runs per week but only picked ${checkedDays} days.`,
-          );
-          return; // Stops the plan from being created
-        }
 
         if (!startDate) {
           alert("Please select a Start Date!");
