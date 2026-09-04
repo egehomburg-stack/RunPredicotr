@@ -3538,7 +3538,10 @@
 
             <!-- ZÜRICH MARATHON CARD -->
             <button
-              onclick="openZurichDetail()"
+              onclick="
+                openZurichDetail();
+                initPlanSelection();
+              "
               class="relative w-full h-32 rounded-2xl overflow-hidden group border border-white/10 transition-transform active:scale-[0.98]"
             >
               <!-- Background Image with Overlay -->
@@ -3556,6 +3559,7 @@
                 class="absolute inset-0 p-4 flex flex-col justify-end text-left"
               >
                 <div
+                  id="zuriMarathonDate"
                   class="text-[#4ade80] text-[10px] font-bold uppercase mb-1"
                 >
                   Apr 11, 2027 • 10km - Half Marathon - Marathon
@@ -3942,41 +3946,54 @@
             </div>
 
             <button
-              onclick="goToConfig()"
+              onclick="goToPlan()"
               class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl mt-8"
             >
               Next
             </button>
           </div>
 
-          <!-- 1. INPUT FORM SECTION (Hidden once plan is calculated) -->
-          <div id="eventInputsSection" class="hidden space-y-3">
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="text-xs text-slate-400">Benchmark Distance</label>
-                <select
-                  id="eventBaseDist"
-                  class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
-                >
-                  <option value="5">5 km</option>
-                  <option value="10" selected>10 km</option>
-                  <option value="21.0975">Half Marathon (21.1k)</option>
-                </select>
-              </div>
-              <div>
-                <label class="text-xs text-slate-400"
-                  >Benchmark Time (Z2)</label
-                >
-                <input
-                  type="text"
-                  id="eventBaseTime"
-                  placeholder="e.g. 52:00"
-                  class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
-                  value="50:00"
-                />
+          <!-- Plan Selection View -->
+          <div
+            id="view-plan-selection"
+            class="hidden p-6 max-w-md mx-auto bg-zinc-950 min-h-screen text-white"
+          >
+            <h2 class="text-2xl font-bold mb-2">
+              When do you want to start your plan?
+            </h2>
+            <p class="text-sm text-zinc-400 mb-8">
+              Pick a start date that suits you best.
+            </p>
+
+            <!-- This will be filled by JavaScript -->
+            <div id="plan-options-container" class="space-y-4"></div>
+
+            <!-- Custom Option (Triggering your existing calendar) -->
+            <div class="mt-4">
+              <div
+                onclick="openCustomCalendar()"
+                class="w-full p-4 rounded-2xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 transition cursor-pointer flex justify-between items-center group"
+              >
+                <div class="flex items-center gap-3">
+                  <span class="text-xl">📅</span>
+                  <span class="font-medium"
+                    >Custom: When do you want to start?</span
+                  >
+                </div>
+                <span class="text-zinc-500 text-sm">Select ></span>
               </div>
             </div>
 
+            <button
+              onclick="goToConfig()"
+              class="w-full mt-10 bg-blue-600 hover:bg-blue-500 py-4 rounded-full font-bold text-lg transition-all active:scale-95"
+            >
+              Continue
+            </button>
+          </div>
+
+          <!-- 1. INPUT FORM SECTION (Hidden once plan is calculated) -->
+          <div id="eventInputsSection" class="hidden space-y-3">
             <div class="grid grid-cols-2 md:grid grid-cols-3 gap-2">
               <div>
                 <label class="text-xs text-slate-400">Longest Run (km)</label>
@@ -4003,32 +4020,6 @@
                   type="date"
                   id="planStartDate"
                   class="appearance-none -webkit-appearance-none h-[40px] mt-1 w-full px-2 py-0 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
-                />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800">
-              <div>
-                <label class="text-xs text-slate-400">Target Goal</label>
-                <select
-                  id="eventGoalDistance"
-                  class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
-                >
-                  <option value="10">10 km</option>
-                  <option value="21.0975">Half Marathon</option>
-                  <option value="42.195">Marathon</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="text-xs text-slate-400">Prep Weeks</label>
-                <input
-                  type="number"
-                  id="eventTotalWeeks"
-                  value="16"
-                  min="6"
-                  max="52"
-                  class="w-full mt-1 bg-slate-800 text-white rounded-xl p-2.5 border border-slate-700 text-xs outline-none"
                 />
               </div>
             </div>
@@ -4966,6 +4957,7 @@
 
       // Variable to keep track of the selected distance
       let selectedRaceDistance = null;
+      let globalGoalDistZuriMarathon = 10;
 
       function selectDistanceZuriMarathon(distanceType) {
         selectedRaceDistance = distanceType;
@@ -4988,13 +4980,13 @@
         // Highlight the selected one and set the value for your next inputs screen
         if (distanceType === "10k") {
           btn10k.className = activeClass;
-          document.getElementById("eventGoalDistance").value = "10";
+          globalGoalDistZuriMarathon = 10;
         } else if (distanceType === "half") {
           btnHalf.className = activeClass;
-          document.getElementById("eventGoalDistance").value = "21";
+          globalGoalDistZuriMarathon = 21.1;
         } else if (distanceType === "full") {
           btnFull.className = activeClass;
-          document.getElementById("eventGoalDistance").value = "42";
+          globalGoalDistZuriMarathon = 42;
         }
       }
 
@@ -5016,6 +5008,7 @@
       }
 
       let selectedCurrentDistance = "5k"; // Default or starting value
+      let globalBenchDist = 5;
 
       function selectCurrentDistance(distance) {
         selectedCurrentDistance = distance;
@@ -5040,13 +5033,16 @@
         if (distance === "5k") {
           btn5k.className = activeClass;
           document.getElementById("displayCurrentDist").innerText = "5k";
+          globalBenchDist = 5;
         } else if (distance === "10k") {
           btn10k.className = activeClass;
           document.getElementById("displayCurrentDist").innerText = "10k";
+          globalBenchDist = 10;
         } else if (distance === "half") {
           btnHalf.className = activeClass;
           document.getElementById("displayCurrentDist").innerText =
             "Half Marathon";
+          globalBenchDist = 21.1;
         }
       }
 
@@ -5127,8 +5123,124 @@
         }
       }
 
+      let globalEndDate = null;
+
+      function initPlanSelection() {
+        const container = document.getElementById("plan-options-container");
+
+        // 1. SCRAPE: Get the date from your HTML string (e.g., "Apr 11, 2027 • 10km...")
+        // Make sure to use the correct class/ID of where your event text lives
+        const eventText = document.getElementById("zuriMarathonDate").innerText;
+        console.log("eventText:", eventText);
+        const datePart = eventText.split("•")[0].trim();
+        const eventDate = new Date(datePart);
+        globalEndDate = eventDate;
+        const today = new Date();
+
+        // 2. MATH: Calculate max weeks available
+        const diffInMs = eventDate - today;
+        const maxWeeksAvailable = Math.floor(
+          diffInMs / (1000 * 60 * 60 * 24 * 7),
+        );
+
+        // 3. DEFINE: The plan options
+        const standardPlans = [
+          { weeks: 20, desc: "Recommended for longer training time" },
+          { weeks: 16, desc: "Recommended for balanced training amount" },
+          { weeks: 12, desc: "Recommended for short training time" },
+        ];
+
+        container.innerHTML = ""; // Clear existing
+        const plansToShow = [];
+
+        // Logic: If event is in 18 weeks, the first option becomes "18 Weeks"
+        const topPlanWeeks = Math.min(20, maxWeeksAvailable);
+
+        if (topPlanWeeks >= 12) {
+          plansToShow.push({
+            weeks: topPlanWeeks,
+            desc:
+              topPlanWeeks >= 20
+                ? standardPlans[0].desc
+                : `Maximum available time (${topPlanWeeks} weeks)`,
+          });
+        }
+
+        // Add 16 and 12 only if they are strictly less than our top plan
+        standardPlans.forEach((plan) => {
+          if (plan.weeks < topPlanWeeks) {
+            plansToShow.push(plan);
+          }
+        });
+
+        // 4. RENDER: Build the cards
+        plansToShow.forEach((plan, index) => {
+          // Calculate the specific start date for this card
+          const startDay = new Date(eventDate);
+          startDay.setDate(eventDate.getDate() - plan.weeks * 7);
+          const dateString = startDay.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          });
+
+          const card = document.createElement("div");
+          const isSelected = false; // Default select the top one
+
+          card.className = `p-4 rounded-2xl border transition-all cursor-pointer flex justify-between items-center group 
+            ${isSelected ? "border-blue-500 bg-zinc-900 ring-1 ring-blue-500" : "border-zinc-800 bg-zinc-900 hover:bg-zinc-800"}`;
+
+          card.onclick = () => {
+            // Remove selection from others
+            document
+              .querySelectorAll("#plan-options-container > div")
+              .forEach((el) => {
+                el.classList.remove(
+                  "border-blue-500",
+                  "ring-1",
+                  "ring-blue-500",
+                );
+                el.classList.add("border-zinc-800");
+              });
+            // Add to this one
+            card.classList.add("border-blue-500", "ring-1", "ring-blue-500");
+            card.classList.remove("border-zinc-800");
+
+            const formattedDate = startDay.toISOString().split("T")[0];
+            document.getElementById("planStartDate").value = formattedDate;
+          };
+
+          card.innerHTML = `
+            <div>
+                <div class="text-[10px] text-zinc-500 font-bold uppercase mb-1">${dateString}</div>
+                <h3 class="text-lg font-bold">${plan.weeks} Week Plan</h3>
+                <p class="text-xs text-zinc-400 mt-1">${plan.desc}</p>
+            </div>
+            <div class="w-6 h-6 rounded-full border-2 border-zinc-700 flex items-center justify-center group-[.border-blue-500]:border-blue-500 group-[.border-blue-500]:bg-blue-500">
+                <div class="w-2 h-2 bg-white rounded-full"></div>
+            </div>
+        `;
+          container.appendChild(card);
+        });
+      }
+
+      // Function to call your existing calendar input
+      function openCustomCalendar() {
+        // Replace 'planStartDate' with your actual input ID if different
+        document.getElementById("planStartDate").showPicker();
+      }
+
+      function goToPlan() {
+        const benchmarkPage = document.getElementById("benchmarkPage");
+        const planPage = document.getElementById("view-plan-selection");
+
+        // Hide Goals, Show Inputs
+        benchmarkPage.classList.add("hidden");
+        planPage.classList.remove("hidden");
+      }
+
       function goToConfig() {
-        const findRacePage = document.getElementById("benchmarkPage");
+        const findRacePage = document.getElementById("view-plan-selection");
         const inputPage = document.getElementById("eventInputsSection");
 
         // Hide Goals, Show Inputs
@@ -5173,7 +5285,6 @@
         // Helper to create the number divs
         const createItem = (n, unit) => {
           const div = document.createElement("div");
-          // Ensure h-12 matches our 48px calculation (12 * 4 = 48)
           div.className =
             "h-16 flex items-center justify-center snap-center text-xl font-bold text-slate-500 transition-all cursor-pointer";
           div.innerText = n + unit;
@@ -5209,8 +5320,13 @@
         setTimeout(() => {
           mins.scrollTop = 25 * 48;
           updateDisplayTime();
+          calculateEventPlan();
         }, 100);
       }
+
+      let globalSeconds = 0;
+      let globalMinutes = 0;
+      let globalHours = 0;
 
       function updateDisplayTime() {
         const h = Math.round(
@@ -5222,6 +5338,10 @@
         const s = Math.round(
           document.getElementById("secScroll").scrollTop / 64,
         );
+
+        globalSeconds = s;
+        globalMinutes = m;
+        globalHours = h;
 
         // Update the text at the top
         const display = document.getElementById("displayTime");
@@ -5252,6 +5372,7 @@
       }
 
       function calculateEventPlan() {
+        const endDate = globalEndDate;
         const runsInput = document.getElementById("eventRunsPerWeek");
         const trainingDaysContainer = document.getElementById(
           "trainingDaysContainer",
@@ -5266,7 +5387,10 @@
         // 2. Logic to find the Monday of that week
         const day = inputDate.getDay(); // 0 (Sun) to 6 (Sat)
         const diff = inputDate.getDate() - day + (day === 0 ? -6 : 1);
+        const diffTime = endDate - inputDate;
         const snappedMonday = new Date(inputDate.setDate(diff));
+        const totalWeeks = Math.round(diffTime / (1000 * 60 * 60 * 24 * 7));
+        console.log("total Weeks:", totalWeeks);
 
         // 3. Store the snapped Monday as your startDate
         const startDate = snappedMonday.toISOString().split("T")[0];
@@ -5280,28 +5404,18 @@
           alert("Please select a Start Date!");
           return; // Stops the plan from being created
         }
-        const d1 = parseFloat(document.getElementById("eventBaseDist").value);
-        const t1Sec = timeStringToSeconds(
-          document.getElementById("eventBaseTime").value,
-        );
+
+        const d1 = globalBenchDist;
+        const t1Sec = globalSeconds + globalMinutes * 60 + globalHours * 3600;
         const currentWeeklyKm =
           parseFloat(document.getElementById("eventCurrentWeeklyKm").value) ||
           20;
         const runsPerWeek =
           parseInt(document.getElementById("eventRunsPerWeek").value) || 4;
-        const d2 = parseFloat(
-          document.getElementById("eventGoalDistance").value,
-        );
+        const d2 = globalGoalDistZuriMarathon;
         const goalSec = timeStringToSeconds(
           document.getElementById("eventGoalTime").value,
         );
-        const totalWeeks =
-          parseInt(document.getElementById("eventTotalWeeks").value) || 16;
-
-        if (!t1Sec || !goalSec) {
-          alert("Please enter valid benchmark and goal times!");
-          return;
-        }
 
         // 1. Calculations
         const riegelSec = t1Sec * Math.pow(d2 / d1, 1.06);
@@ -5931,17 +6045,13 @@
 
       function showWorkoutDetails(type, km, date, desc) {
         // 1. Get user benchmark data (Fallback to 10km in 60min if empty)
-        const rawDist = document.getElementById("eventBaseDist").value;
-        const rawTime = document.getElementById("eventBaseTime").value;
-
-        // 2. Use your existing parser function!
+        const rawDist = globalBenchDist;
+        const benchInSeconds =
+          globalSeconds + globalMinutes * 60 + globalHours * 3600;
         const bDist = parseFloat(rawDist) || 10;
-        const bTimeSeconds = timeStringToSeconds(rawTime) || 3000; // default to 50 min if empty
 
-        console.log("Parsed Distance:", bDist);
-        console.log("Parsed Seconds:", bTimeSeconds);
         // 3. Calculate Base Pace in seconds per km
-        const basePaceSeconds = bTimeSeconds / bDist;
+        const basePaceSeconds = benchInSeconds / bDist;
         const convPaceSeconds = basePaceSeconds + 60; // Usually +60s for conversational
         const convPaceStr = formatPace(convPaceSeconds);
         let descriptionHTML = "";
